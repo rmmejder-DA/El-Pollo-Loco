@@ -48,6 +48,16 @@
             <button class="restart-button" onclick="restartGame()">Restart Game</button>
         </div>
 
+        <div id="loadingScreen" class="loading-screen hidden" aria-live="polite">
+            <div class="loading-puzzle" aria-hidden="true">
+                <div class="loading-piece loading-piece-top-left"></div>
+                <div class="loading-piece loading-piece-top-right"></div>
+                <div class="loading-piece loading-piece-bottom-left"></div>
+                <div class="loading-piece loading-piece-bottom-right"></div>
+            </div>
+            <img id="loadingPepe" class="loading-pepe" src="img/2_character_pepe/2_walk/W-21.png" alt="Pepe laeuft">
+        </div>
+
         <canvas id="polloCanvas" class="hidden" width="720" height="480"></canvas>
 
         <div id="mobileControls" class="mobile-controls hidden">

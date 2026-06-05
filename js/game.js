@@ -3,8 +3,23 @@ let world;
 let keyboard = new Keyboard();
 let gameOverShown = false;
 let winShown = false;
+let loadingShown = false;
+let loadingPepeAnimation = null;
 let pepeDeadSound = new Audio("audio/pepeDead.mp3");
 let gameSound = new Audio("audio/gameSound.mp3");
+const LOADING_DURATION = 2200;
+const LOADING_PEPE_IMAGES = [
+    "img/2_character_pepe/2_walk/W-21.png",
+    "img/2_character_pepe/2_walk/W-22.png",
+    "img/2_character_pepe/2_walk/W-23.png",
+    "img/2_character_pepe/2_walk/W-24.png",
+    "img/2_character_pepe/2_walk/W-25.png",
+    "img/2_character_pepe/2_walk/W-26.png"
+];
+const LOADING_PRELOAD_IMAGES = [
+    "img/5_background/second_half_background.png",
+    ...LOADING_PEPE_IMAGES
+];
 
 function init() {
     canvas = document.getElementById("polloCanvas");
@@ -77,13 +92,58 @@ function stopGameSound() {
     gameSound.currentTime = 0;
 }
 
-function startGame() {
-    if (world && !gameOverShown) {
+function preloadImage(src) {
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = resolve;
+        image.onerror = resolve;
+        image.src = src;
+    });
+}
+
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function startLoadingAnimation() {
+    const loadingPepe = document.getElementById("loadingPepe");
+    let imageIndex = 0;
+
+    clearInterval(loadingPepeAnimation);
+
+    if (!loadingPepe) {
         return;
     }
 
-    initLevel1();
+    loadingPepe.src = LOADING_PEPE_IMAGES[imageIndex];
+    loadingPepeAnimation = setInterval(() => {
+        imageIndex = (imageIndex + 1) % LOADING_PEPE_IMAGES.length;
+        loadingPepe.src = LOADING_PEPE_IMAGES[imageIndex];
+    }, 90);
+}
 
+function stopLoadingAnimation() {
+    clearInterval(loadingPepeAnimation);
+    loadingPepeAnimation = null;
+}
+
+function setLoadingVisible(isVisible) {
+    const loadingScreen = document.getElementById("loadingScreen");
+
+    loadingShown = isVisible;
+
+    if (loadingScreen) {
+        loadingScreen.classList.toggle("hidden", !isVisible);
+    }
+
+    if (isVisible) {
+        startLoadingAnimation();
+    } else {
+        stopLoadingAnimation();
+    }
+}
+
+function prepareGameScreen() {
     const startScreen = document.getElementById("startScreen");
     const gameOverScreen = document.getElementById("gameOverScreen");
     const winScreen = document.getElementById("winScreen");
@@ -102,6 +162,29 @@ function startGame() {
     }
 
     if (canvas) {
+        canvas.classList.add("hidden");
+    }
+
+    if (fullscreenButton) {
+        fullscreenButton.classList.add("hidden");
+    }
+
+    setMobileControlsVisible(false);
+}
+
+async function showLoadingScreen() {
+    setLoadingVisible(true);
+    await Promise.all([
+        Promise.all(LOADING_PRELOAD_IMAGES.map(src => preloadImage(src))),
+        wait(LOADING_DURATION)
+    ]);
+    setLoadingVisible(false);
+}
+
+function activateGameScreen() {
+    const fullscreenButton = document.getElementById("fullscreenButton");
+
+    if (canvas) {
         canvas.classList.remove("hidden");
     }
 
@@ -110,6 +193,17 @@ function startGame() {
     }
 
     setMobileControlsVisible(true);
+}
+
+async function startGame() {
+    if (loadingShown || (world && !gameOverShown && !winShown)) {
+        return;
+    }
+
+    prepareGameScreen();
+    await showLoadingScreen();
+    initLevel1();
+    activateGameScreen();
 
     if (!world) {
         world = new World(canvas, keyboard);
