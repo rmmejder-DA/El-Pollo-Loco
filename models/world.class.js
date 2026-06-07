@@ -115,9 +115,9 @@ class World extends DrawableObject {
         if (this.keyboard.D && this.bottleCount > 0) {
             const direction = this.character.otherDirection ? -1 : 1;
             const bottleX = this.character.otherDirection
-                ? this.character.x - 20
-                : this.character.x + 50;
-            let bottle = new ThrowableObject(bottleX, this.character.y + 50, direction);
+                ? this.character.x + 58
+                : this.character.x + this.character.width - 68;
+            let bottle = new ThrowableObject(bottleX, this.character.y + 6, direction);
             this.throwableObjects.push(bottle);
             this.bottleCount--;
             this.updateCollectibleStatusBars();
@@ -475,12 +475,12 @@ class World extends DrawableObject {
             return;
         }
 
-        const bottleWidth = 34;
+        const bottleWidth = 42;
         const bottleHeight = 40;
-        const bottleY = this.character.y + 72;
+        const bottleY = this.character.y + 162;
         const bottleX = this.character.otherDirection
-            ? this.character.x + this.character.width - 38
-            : this.character.x + 6;
+            ? this.character.x + this.character.width - 66
+            : this.character.x + 16;
 
         this.ctx.drawImage(this.carriedBottleImage, bottleX, bottleY, bottleWidth, bottleHeight);
     }

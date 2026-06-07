@@ -1,7 +1,8 @@
 class Charakter extends MovableObject {
-    height = 150;
-    y = 280;
-    groundY = 280;
+    height = 260;
+    width = 150;
+    groundY = 180;
+    y = this.groundY;
     speed = 7;
     speedY = 0;
     acceleration = 2;
@@ -52,6 +53,19 @@ class Charakter extends MovableObject {
         "img/2_character_pepe/1_idle/idle/I-10.png"
     ];
 
+    IMAGES_LONG_IDLE = [
+        "img/2_character_pepe/1_idle/long_idle/I-11.png",
+        "img/2_character_pepe/1_idle/long_idle/I-12.png",
+        "img/2_character_pepe/1_idle/long_idle/I-13.png",
+        "img/2_character_pepe/1_idle/long_idle/I-14.png",
+        "img/2_character_pepe/1_idle/long_idle/I-15.png",
+        "img/2_character_pepe/1_idle/long_idle/I-16.png",
+        "img/2_character_pepe/1_idle/long_idle/I-17.png",
+        "img/2_character_pepe/1_idle/long_idle/I-18.png",
+        "img/2_character_pepe/1_idle/long_idle/I-19.png",
+        "img/2_character_pepe/1_idle/long_idle/I-20.png"
+    ];
+
     world;
     walking_sound = new Audio("audio/walking.mp3");
     jump_sound = new Audio("audio/jump.mp3");
@@ -59,6 +73,54 @@ class Charakter extends MovableObject {
     walkingAudioActive = false;
     walkingFadeInterval = null;
     walkingVolume = 0.45;
+    activeAnimation = null;
+    idleStartedAt = null;
+    longIdleDelay = 5000;
+
+    getMaxX() {
+        return typeof this.world.getCharacterMaxX === "function"
+            ? this.world.getCharacterMaxX()
+            : this.world.level.level_end_x;
+    }
+
+    isMoving() {
+        if (!this.world || !this.world.keyboard) {
+            return false;
+        }
+
+        const maxX = this.getMaxX();
+        const isMovingRight = this.world.keyboard.right && this.x < maxX;
+        const isMovingLeft = this.world.keyboard.left && this.x > 0;
+        return isMovingRight || isMovingLeft;
+    }
+
+    isThrowingBottle() {
+        return this.world && this.world.keyboard && this.world.keyboard.D;
+    }
+
+    playCharacterAnimation(images) {
+        if (this.activeAnimation !== images) {
+            this.currentImageIndex = 0;
+            this.activeAnimation = images;
+        }
+
+        this.playAnimation(images);
+    }
+
+    resetIdleTimer() {
+        this.idleStartedAt = null;
+    }
+
+    getIdleAnimation() {
+        if (!this.idleStartedAt) {
+            this.idleStartedAt = Date.now();
+        }
+
+        const idleTime = Date.now() - this.idleStartedAt;
+        return idleTime >= this.longIdleDelay
+            ? this.IMAGES_LONG_IDLE
+            : this.IMAGES_IDLE;
+    }
 
     stopWalkingSound() {
         if (!this.walkingAudioActive) {
@@ -108,17 +170,20 @@ class Charakter extends MovableObject {
             }
 
             if (this.isDead()) {
+                this.resetIdleTimer();
                 this.stopWalkingSound();
                 return;
             }
 
-            const maxX = typeof this.world.getCharacterMaxX === "function"
-                ? this.world.getCharacterMaxX()
-                : this.world.level.level_end_x;
+            const maxX = this.getMaxX();
 
             const isMovingRight = this.world.keyboard.right && this.x < maxX;
             const isMovingLeft = this.world.keyboard.left && this.x > 0;
-            const isMoving = isMovingRight || isMovingLeft;
+            const isMoving = this.isMoving();
+
+            if (isMoving || this.isThrowingBottle()) {
+                this.resetIdleTimer();
+            }
 
             if (isMoving) {
                 this.startWalkingSound();
@@ -137,6 +202,7 @@ class Charakter extends MovableObject {
             this.x = Math.max(0, Math.min(this.x, maxX));
 
             if (this.world.keyboard.space && !this.isAboveGround()) {
+                this.resetIdleTimer();
                 this.jump_sound.currentTime = 0;
                 this.jump_sound.play().catch(() => { });
                 this.jump();
@@ -151,29 +217,36 @@ class Charakter extends MovableObject {
 
         setInterval(() => {
             if (this.isDead()) {
+                this.resetIdleTimer();
                 if (!this.deathAnimationStarted) {
                     this.currentImageIndex = 0;
+                    this.activeAnimation = null;
                     this.deathAnimationStarted = true;
                 }
 
                 this.stopWalkingSound();
-                this.playAnimation(this.IMAGES_DEAD);
+                this.playCharacterAnimation(this.IMAGES_DEAD);
             } else if (this.isHurt()) {
+                this.resetIdleTimer();
                 this.deathAnimationStarted = false;
-                this.playAnimation(this.IMAGES_HURT);
+                this.playCharacterAnimation(this.IMAGES_HURT);
             } else if (this.isAboveGround()) {
-                this.deathAnimationStarted = false;
-                this.playAnimation(this.IMAGES_JUMPING);
+                this.resetIdleTimer();
+                this.deathAnimationStarted = false;       
+                this.playCharacterAnimation(this.IMAGES_JUMPING);
             } else {
                 this.deathAnimationStarted = false;
                 if (!this.world || !this.world.keyboard) {
                     return;
                 }
-
-                if (this.world.keyboard.right || this.world.keyboard.left) {
-                    this.playAnimation(this.IMAGES_WALKING);
+                if (this.isMoving()) {
+                    this.resetIdleTimer();
+                    this.playCharacterAnimation(this.IMAGES_WALKING);
+                } else if (this.isThrowingBottle()) {
+                    this.resetIdleTimer();
+                    this.playCharacterAnimation(this.IMAGES_IDLE);
                 } else {
-                    this.playAnimation(this.IMAGES_IDLE);
+                    this.playCharacterAnimation(this.getIdleAnimation());
                 }
             }
         }, 50);
@@ -184,6 +257,7 @@ class Charakter extends MovableObject {
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_JUMPING);
         this.loadImages(this.IMAGES_IDLE);
+        this.loadImages(this.IMAGES_LONG_IDLE);
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_HURT);
         this.walking_sound.preload = "auto";

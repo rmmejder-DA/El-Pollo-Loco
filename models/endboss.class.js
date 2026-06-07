@@ -11,8 +11,7 @@ class Endboss extends MovableObject {
     deadAnimationPlayed = false;
     fightMinX = 1450;
     fightMaxX = 3350;
-    preferredDistanceMin = 120;
-    preferredDistanceMax = 260;
+    targetDistance = 80;
     attackCooldownMs = 750;
     attackDurationMs = 520;
     lastAttackAt = 0;
@@ -87,41 +86,19 @@ class Endboss extends MovableObject {
             this.otherDirection = distanceToCharacter > 0;
             this.updateAttackState(Math.abs(distanceToCharacter));
 
-            const minX = this.fightMinX;
-            const maxX = this.fightMaxX;
-
             if (this.isKnockedBack()) {
                 this.x += this.knockbackDirection * this.knockbackSpeed;
-                this.x = Math.max(minX, Math.min(this.x, maxX));
+                this.keepInsideFightBounds();
                 return;
             }
 
             if (this.isAttacking()) {
                 this.x += distanceToCharacter > 0 ? this.speed * 0.8 : -this.speed * 0.8;
-                this.x = Math.max(minX, Math.min(this.x, maxX));
+                this.keepInsideFightBounds();
                 return;
             }
 
-            if (Math.abs(distanceToCharacter) > this.preferredDistanceMax) {
-                this.x += distanceToCharacter > 0 ? this.speed : -this.speed;
-                this.x = Math.max(minX, Math.min(this.x, maxX));
-                return;
-            }
-
-            if (Math.abs(distanceToCharacter) < this.preferredDistanceMin) {
-                this.x += distanceToCharacter > 0 ? -this.speed * 0.9 : this.speed * 0.9;
-                this.x = Math.max(minX, Math.min(this.x, maxX));
-                return;
-            }
-
-            if (this.x <= minX) {
-                this.patrolDirection = 1;
-            } else if (this.x >= maxX) {
-                this.patrolDirection = -1;
-            }
-
-            this.x += this.speed * 0.45 * this.patrolDirection;
-            this.x = Math.max(minX, Math.min(this.x, maxX));
+            this.moveTowardCharacter(character);
         }, 1000 / 60);
 
         setInterval(() => {
@@ -182,6 +159,23 @@ class Endboss extends MovableObject {
             this.fightMinX = minX;
             this.fightMaxX = maxX;
         }
+    }
+
+    keepInsideFightBounds() {
+        this.x = Math.max(this.fightMinX, Math.min(this.x, this.fightMaxX));
+    }
+
+    moveTowardCharacter(character) {
+        const targetX = Math.max(this.fightMinX, Math.min(character.x, this.fightMaxX));
+        const distanceToTarget = targetX - this.x;
+
+        if (Math.abs(distanceToTarget) <= this.targetDistance) {
+            this.keepInsideFightBounds();
+            return;
+        }
+
+        this.x += distanceToTarget > 0 ? this.speed : -this.speed;
+        this.keepInsideFightBounds();
     }
 
     updateAttackState(distanceToCharacter) {

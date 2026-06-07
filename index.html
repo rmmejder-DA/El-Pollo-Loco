@@ -33,6 +33,31 @@
     </div>
 
     <div id="fullscreen">
+        <div id="helpMeContainer" class="help-me-container" role="button" tabindex="0">
+            <img src="icon/help_me_transparent.png" alt="Help Me" class="keyboard-info">
+            <p class="help-me-text">Keyboard Info</p>
+        </div>
+
+        <div id="keyboardInfo" class="keyboard-info-screen hidden">
+            <div class="keyboard-left-container">
+                <p class="keyboard-left">LEFT</p>
+                <span class="keyboard-left-arrow">‹</span>
+            </div>
+            <div class="keyboard-right-container">
+                <p class="keyboard-right">RIGHT</p>
+                <span class="keyboard-right-arrow">›</span>
+            </div>
+            <div class="keyboard-jump-container">
+                <p class="keyboard-jump">JUMP</p>
+                <span class="keyboard-jump-arrow">SPACE</span>
+            </div>
+            <div class="keyboard-throw-container">
+                <p class="keyboard-throw">THROW BOTTLE</p>
+                <span class="keyboard-throw-key">D</span>
+            </div>
+            <button class="close-button" onclick="toggleKeyboardInfo()">Close</button>
+        </div>
+
         <div id="startScreen" class="start-screen">
             <img src="img/9_intro_outro_screens/start/startscreen_1.png" alt="Startscreen 1">
             <button class="start-button" onclick="startGame()">START</button>
@@ -66,8 +91,10 @@
                 <button id="mobileRight" class="mobile-control-button" aria-label="Rechts">›</button>
             </div>
             <div class="mobile-controls-right">
-                <button id="mobileJump" class="mobile-control-button action-button" aria-label="Springen">^</button>
-                <button id="mobileThrow" class="mobile-control-button action-button" aria-label="Flasche werfen"><img src="img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png" alt="Flasche werfen"></button>
+                <button id="mobileJump" class="mobile-control-button action-button" aria-label="Springen"><img
+                        class="mobile-jumping" src="icon/jump.png" alt="Springen"></button>
+                <button id="mobileThrow" class="mobile-control-button action-button" aria-label="Flasche werfen"><img
+                        src="img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png" alt="Flasche werfen"></button>
             </div>
         </div>
 

@@ -29,6 +29,35 @@ function init() {
     gameSound.volume = 0.35;
     gameSound.loop = true;
     initMobileControls();
+    initKeyboardInfo();
+}
+
+function isMobileViewport() {
+    return window.matchMedia("(max-width: 900px)").matches;
+}
+
+function setFullscreenButtonVisible(isVisible) {
+    const fullscreenButton = document.getElementById("fullscreenButton");
+
+    if (fullscreenButton) {
+        fullscreenButton.classList.toggle("hidden", !isVisible || isMobileViewport());
+    }
+}
+
+function initKeyboardInfo() {
+    const helpMeContainer = document.getElementById("helpMeContainer");
+
+    if (!helpMeContainer) {
+        return;
+    }
+
+    helpMeContainer.addEventListener("click", toggleKeyboardInfo);
+    helpMeContainer.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleKeyboardInfo();
+        }
+    });
 }
 
 function setMobileControlsVisible(isVisible) {
@@ -147,7 +176,8 @@ function prepareGameScreen() {
     const startScreen = document.getElementById("startScreen");
     const gameOverScreen = document.getElementById("gameOverScreen");
     const winScreen = document.getElementById("winScreen");
-    const fullscreenButton = document.getElementById("fullscreenButton");
+    const helpMeContainer = document.getElementById("helpMeContainer");
+    const keyboardInfo = document.getElementById("keyboardInfo");
 
     if (startScreen) {
         startScreen.classList.add("hidden");
@@ -165,8 +195,14 @@ function prepareGameScreen() {
         canvas.classList.add("hidden");
     }
 
-    if (fullscreenButton) {
-        fullscreenButton.classList.add("hidden");
+    setFullscreenButtonVisible(false);
+
+    if (helpMeContainer) {
+        helpMeContainer.classList.add("hidden");
+    }
+
+    if (keyboardInfo) {
+        keyboardInfo.classList.add("hidden");
     }
 
     setMobileControlsVisible(false);
@@ -182,15 +218,11 @@ async function showLoadingScreen() {
 }
 
 function activateGameScreen() {
-    const fullscreenButton = document.getElementById("fullscreenButton");
-
     if (canvas) {
         canvas.classList.remove("hidden");
     }
 
-    if (fullscreenButton) {
-        fullscreenButton.classList.remove("hidden");
-    }
+    setFullscreenButtonVisible(true);
 
     setMobileControlsVisible(true);
 }
@@ -200,6 +232,7 @@ async function startGame() {
         return;
     }
 
+    startGameSound();
     prepareGameScreen();
     await showLoadingScreen();
     initLevel1();
@@ -208,8 +241,6 @@ async function startGame() {
     if (!world) {
         world = new World(canvas, keyboard);
     }
-
-    startGameSound();
 
     gameOverShown = false;
     winShown = false;
@@ -332,7 +363,6 @@ function clearIntervals() {
 function restartGame() {
     const gameOverScreen = document.getElementById("gameOverScreen");
     const winScreen = document.getElementById("winScreen");
-    const fullscreenButton = document.getElementById("fullscreenButton");
 
     if (gameOverScreen) {
         gameOverScreen.classList.add("hidden");
@@ -346,9 +376,7 @@ function restartGame() {
         canvas.classList.remove("hidden");
     }
 
-    if (fullscreenButton) {
-        fullscreenButton.classList.remove("hidden");
-    }
+    setFullscreenButtonVisible(true);
 
     setMobileControlsVisible(true);
 
@@ -442,3 +470,16 @@ function closeFullscreen() {
     document.msExitFullscreen();
   }
 }
+
+function helpMe() {
+    toggleKeyboardInfo();
+}
+
+function toggleKeyboardInfo() {
+    const keyboardInfo = document.getElementById("keyboardInfo");
+
+    if (keyboardInfo) {
+        keyboardInfo.classList.toggle("hidden");
+    }
+}
+
