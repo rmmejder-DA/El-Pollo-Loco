@@ -4,24 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="icon/fullscreen.png">
-    <link href="fonts/Midnight crimson.ttf" rel="stylesheet">
-    <script src="models/drawable-object.class.js"></script>
-    <script src="models/movable-object.class.js"></script>
-    <script src="models/charakter.class.js"></script>
-    <script src="models/chicken.class.js"></script>
-    <script src="models/cloud.class.js"></script>
-    <script src="models/background-object.class.js"></script>
-    <script src="models/collectible-object.class.js"></script>
-    <script src="models/endboss.class.js"></script>
-    <script src="models/status-bar.class.js"></script>
-    <script src="models/keyboard.class.js"></script>
-    <script src="models/throwable-objects.class.js"></script>
-    <script src="models/level.class.js"></script>
-    <script src="levels/level1.js"></script>
-    <script src="models/world.class.js"></script>
-    <script src="js/game.js"></script>
+    <link rel="preload" href="fonts/Midnight crimson.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="img/5_background/second_half_background.png" as="image">
+    <link rel="preload" href="img/9_intro_outro_screens/start/startscreen_1.png" as="image">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/screens.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script defer src="models/drawable-object.class.js"></script>
+    <script defer src="models/movable-object.class.js"></script>
+    <script defer src="models/charakter.class.js"></script>
+    <script defer src="models/chicken.class.js"></script>
+    <script defer src="models/cloud.class.js"></script>
+    <script defer src="models/background-object.class.js"></script>
+    <script defer src="models/collectible-object.class.js"></script>
+    <script defer src="models/endboss.class.js"></script>
+    <script defer src="models/status-bar.class.js"></script>
+    <script defer src="models/keyboard.class.js"></script>
+    <script defer src="models/throwable-objects.class.js"></script>
+    <script defer src="models/level.class.js"></script>
+    <script defer src="levels/level1.js"></script>
+    <script defer src="models/world-collision-handler.class.js"></script>
+    <script defer src="models/world-canvas-controls.class.js"></script>
+    <script defer src="models/world-status-factory.class.js"></script>
+    <script defer src="models/world-renderer.class.js"></script>
+    <script defer src="models/world.class.js"></script>
+    <script defer src="js/game-state.js"></script>
+    <script defer src="js/game-audio.js"></script>
+    <script defer src="js/game-controls.js"></script>
+    <script defer src="js/game-loading.js"></script>
+    <script defer src="js/game-screens.js"></script>
+    <script defer src="js/game-fullscreen.js"></script>
+    <script defer src="js/game.js"></script>
 
     <title>El Pollo Loco</title>
 </head>
@@ -36,6 +51,33 @@
         <div id="helpMeContainer" class="help-me-container" role="button" tabindex="0">
             <img src="icon/help_me_transparent.png" alt="Help Me" class="keyboard-info">
             <p class="help-me-text">Keyboard Info</p>
+        </div>
+
+        <div class="mobile-touch-key-info hidden" id="mobileTouchKeyInfo">
+            <header class="mobile-touch-key-header">
+                <button class="mobile-touch-info-btn" onclick="toggleMobileHelp()">X</button>
+            </header>
+            <div class="mobile-controls-left">
+                <span class="mobile-control-label">
+                    <p class="mobile-control-button" aria-label="Links">‹</p>
+                    LEFT GOING
+                </span>
+                <span class="mobile-control-label">
+                    <p class="mobile-control-button" aria-label="Rechts">›</p>
+                    RIGHT GOING
+                </span>
+            </div>
+
+            <div class="mobile-controls-right">
+
+                <span class="mobile-control-label" aria-label="Jump"><img
+                        class="jump-img" src="icon/jump-white.png"
+                        alt="Jump">JUMP</span>
+                        
+                <span class="mobile-control-label"><img
+                        class="throw-img"
+                        src="img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png" alt="Throw Bottle">THROW BOTTLE</span>
+            </div>
         </div>
 
         <div id="keyboardInfo" class="keyboard-info-screen hidden">
@@ -61,6 +103,9 @@
         <div id="startScreen" class="start-screen">
             <img src="img/9_intro_outro_screens/start/startscreen_1.png" alt="Startscreen 1">
             <button class="start-button" onclick="startGame()">START</button>
+            <div class="help-me-mobile" role="button" tabindex="0" onclick="toggleMobileHelp()">
+                <p class="help-mobile-text">HELP</p>
+            </div>
         </div>
 
         <div id="gameOverScreen" class="game-over-screen hidden">
@@ -85,17 +130,6 @@
 
         <canvas id="polloCanvas" class="hidden" width="720" height="480"></canvas>
 
-        <div id="mobileControls" class="mobile-controls hidden">
-            <div class="mobile-controls-left">
-                <button id="mobileLeft" class="mobile-control-button" aria-label="Links">‹</button>
-                <button id="mobileRight" class="mobile-control-button" aria-label="Rechts">›</button>
-            </div>
-            <div class="mobile-controls-right">
-                <button id="mobileJump" class="mobile-control-button action-button" aria-label="Springen"><img
-                        class="mobile-jumping" src="icon/jump.png" alt="Springen"></button>
-                <button id="mobileThrow" class="mobile-control-button action-button" aria-label="Flasche werfen"><img
-                        src="img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png" alt="Flasche werfen"></button>
-            </div>
         </div>
 
     </div>

@@ -3,6 +3,12 @@ class Endboss extends MovableObject {
     width = 250;
     y = 50;
     x = 2000; // Startposition des Endboss
+    offset = {
+        top: 80,
+        right: 25,
+        bottom: 20,
+        left: 35
+    };
     isDeadAnimationStarted = false;
     world;
     speed = 2.8;
@@ -59,6 +65,7 @@ class Endboss extends MovableObject {
     ];
     hadFirstContact = false;
 
+    /** Creates the endboss and preloads animations. */
     constructor() {
         super();
         this.loadImages(this.IMAGES_WALKING);
@@ -71,89 +78,127 @@ class Endboss extends MovableObject {
         this.animate();
     }
 
+    /** Starts endboss movement and animation loops. */
     animate() {
-        setInterval(() => {
-            if (this.isDead()) {
-                return;
-            }
-
-            if (!this.fightStarted || !this.world || !this.world.character) {
-                return;
-            }
-
-            const character = this.world.character;
-            const distanceToCharacter = character.x - this.x;
-            this.otherDirection = distanceToCharacter > 0;
-            this.updateAttackState(Math.abs(distanceToCharacter));
-
-            if (this.isKnockedBack()) {
-                this.x += this.knockbackDirection * this.knockbackSpeed;
-                this.keepInsideFightBounds();
-                return;
-            }
-
-            if (this.isAttacking()) {
-                this.x += distanceToCharacter > 0 ? this.speed * 0.8 : -this.speed * 0.8;
-                this.keepInsideFightBounds();
-                return;
-            }
-
-            this.moveTowardCharacter(character);
-        }, 1000 / 60);
-
-        setInterval(() => {
-            if (this.isDead()) {
-                if (!this.deadAnimationPlayed) {
-                    if (!this.isDeadAnimationStarted) {
-                        this.currentImageIndex = 0;
-                        this.isDeadAnimationStarted = true;
-                    }
-
-                    this.playAnimation(this.IMAGES_DEAD);
-                    if (this.currentImageIndex >= this.IMAGES_DEAD.length) {
-                        this.deadAnimationPlayed = true;
-                        this.currentImageIndex = this.IMAGES_DEAD.length - 1;
-                    }
-                }
-                return;
-            }
-
-            if (!this.fightStarted) {
-                this.playAnimation(this.IMAGES_ALERT);
-                return;
-            }
-
-            if (this.isHurt()) {
-                this.playAnimation(this.IMAGES_HURT);
-                return;
-            }
-
-            if (this.isAttacking()) {
-                this.playAnimation(this.IMAGES_ATTACK);
-                return;
-            }
-
-            this.playAnimation(this.IMAGES_WALKING);
-        }, 120);
+        setInterval(() => this.updateMovementFrame(), 1000 / 60);
+        setInterval(() => this.updateAnimationFrame(), 120);
     }
 
+    /** Updates one movement frame. */
+    updateMovementFrame() {
+        if (this.shouldSkipMovementFrame()) {
+            return;
+        }
+        const character = this.world.character;
+        const distance = character.x - this.x;
+        this.otherDirection = distance > 0;
+        this.updateAttackState(Math.abs(distance));
+        this.moveByCurrentState(character, distance);
+    }
+
+    /** Checks whether movement should be skipped. */
+    shouldSkipMovementFrame() {
+        return this.isPaused() || this.isDead() || !this.fightStarted || !this.world?.character;
+    }
+
+    /** Moves the boss according to its current state. */
+    moveByCurrentState(character, distance) {
+        if (this.isKnockedBack()) {
+            this.moveKnockback();
+        } else if (this.isAttacking()) {
+            this.moveAttackStep(distance);
+        } else {
+            this.moveTowardCharacter(character);
+        }
+    }
+
+    /** Moves the boss during knockback. */
+    moveKnockback() {
+        this.x += this.knockbackDirection * this.knockbackSpeed;
+        this.keepInsideFightBounds();
+    }
+
+    /** Moves the boss during an attack. */
+    moveAttackStep(distance) {
+        this.x += distance > 0 ? this.speed * 0.8 : -this.speed * 0.8;
+        this.keepInsideFightBounds();
+    }
+
+    /** Updates one animation frame. */
+    updateAnimationFrame() {
+        if (this.isPaused()) {
+            return;
+        }
+        if (this.isDead()) {
+            this.playDeadAnimation();
+            return;
+        }
+        this.playAliveAnimation();
+    }
+
+    /** Checks whether the game is paused. */
+    isPaused() {
+        return typeof isGamePaused === "function" && isGamePaused();
+    }
+
+    /** Plays the dead animation once. */
+    playDeadAnimation() {
+        if (this.deadAnimationPlayed) {
+            return;
+        }
+        this.prepareDeadAnimation();
+        this.playAnimation(this.IMAGES_DEAD);
+        this.finishDeadAnimationWhenDone();
+    }
+
+    /** Prepares the dead animation start. */
+    prepareDeadAnimation() {
+        if (!this.isDeadAnimationStarted) {
+            this.currentImageIndex = 0;
+            this.isDeadAnimationStarted = true;
+        }
+    }
+
+    /** Freezes the dead animation at the last frame. */
+    finishDeadAnimationWhenDone() {
+        if (this.currentImageIndex < this.IMAGES_DEAD.length) {
+            return;
+        }
+        this.deadAnimationPlayed = true;
+        this.currentImageIndex = this.IMAGES_DEAD.length - 1;
+    }
+
+    /** Plays the current alive animation. */
+    playAliveAnimation() {
+        if (!this.fightStarted) {
+            this.playAnimation(this.IMAGES_ALERT);
+        } else if (this.isHurt()) {
+            this.playAnimation(this.IMAGES_HURT);
+        } else if (this.isAttacking()) {
+            this.playAnimation(this.IMAGES_ATTACK);
+        } else {
+            this.playAnimation(this.IMAGES_WALKING);
+        }
+    }
+
+    /** Starts the active boss fight. */
     startFight() {
         this.fightStarted = true;
     }
 
+    /** Applies damage and knockback to the boss. */
     hit() {
         const previousEnergy = this.energy;
         super.hit();
-
         if (this.energy === previousEnergy || !this.world || !this.world.character) {
             return;
         }
-
         this.attackingUntil = 0;
         this.knockbackDirection = this.world.character.x < this.x ? 1 : -1;
         this.knockbackUntil = Date.now() + this.knockbackDurationMs;
     }
 
+    /** Sets the horizontal boss fight bounds. */
     setFightBounds(minX, maxX) {
         if (typeof minX === "number" && typeof maxX === "number" && maxX > minX) {
             this.fightMinX = minX;
@@ -161,23 +206,23 @@ class Endboss extends MovableObject {
         }
     }
 
+    /** Keeps the boss inside its fight bounds. */
     keepInsideFightBounds() {
         this.x = Math.max(this.fightMinX, Math.min(this.x, this.fightMaxX));
     }
 
+    /** Moves the boss toward Pepe. */
     moveTowardCharacter(character) {
         const targetX = Math.max(this.fightMinX, Math.min(character.x, this.fightMaxX));
         const distanceToTarget = targetX - this.x;
-
         if (Math.abs(distanceToTarget) <= this.targetDistance) {
             this.keepInsideFightBounds();
-            return;
-        }
-
+            return;}
         this.x += distanceToTarget > 0 ? this.speed : -this.speed;
         this.keepInsideFightBounds();
     }
 
+    /** Updates attack timing from distance. */
     updateAttackState(distanceToCharacter) {
         const now = Date.now();
         if (distanceToCharacter <= 190 && now - this.lastAttackAt >= this.attackCooldownMs) {
@@ -186,14 +231,17 @@ class Endboss extends MovableObject {
         }
     }
 
+    /** Checks whether the boss is attacking. */
     isAttacking() {
         return Date.now() < this.attackingUntil;
     }
 
+    /** Checks whether the boss is knocked back. */
     isKnockedBack() {
         return Date.now() < this.knockbackUntil;
     }
 
+    /** Checks whether the boss can damage Pepe. */
     canDamageCharacter() {
         return this.isAttacking();
     }

@@ -7,6 +7,12 @@ class Charakter extends MovableObject {
     speedY = 0;
     acceleration = 2;
     gravity = 1;
+    offset = {
+        top: 95,
+        right: 35,
+        bottom: 10,
+        left: 35
+    };
     IMAGES_HURT = [
         "img/2_character_pepe/4_hurt/H-41.png",
         "img/2_character_pepe/4_hurt/H-42.png",
@@ -77,12 +83,14 @@ class Charakter extends MovableObject {
     idleStartedAt = null;
     longIdleDelay = 5000;
 
+    /** Returns Pepe's maximum x position. */
     getMaxX() {
         return typeof this.world.getCharacterMaxX === "function"
             ? this.world.getCharacterMaxX()
             : this.world.level.level_end_x;
     }
 
+    /** Checks whether Pepe is moving horizontally. */
     isMoving() {
         if (!this.world || !this.world.keyboard) {
             return false;
@@ -94,10 +102,12 @@ class Charakter extends MovableObject {
         return isMovingRight || isMovingLeft;
     }
 
+    /** Checks whether Pepe is throwing a bottle. */
     isThrowingBottle() {
         return this.world && this.world.keyboard && this.world.keyboard.D;
     }
 
+    /** Plays a character animation sequence. */
     playCharacterAnimation(images) {
         if (this.activeAnimation !== images) {
             this.currentImageIndex = 0;
@@ -107,10 +117,12 @@ class Charakter extends MovableObject {
         this.playAnimation(images);
     }
 
+    /** Resets the idle timer. */
     resetIdleTimer() {
         this.idleStartedAt = null;
     }
 
+    /** Returns the correct idle animation. */
     getIdleAnimation() {
         if (!this.idleStartedAt) {
             this.idleStartedAt = Date.now();
@@ -122,6 +134,7 @@ class Charakter extends MovableObject {
             : this.IMAGES_IDLE;
     }
 
+    /** Stops Pepe's walking sound with a fade out. */
     stopWalkingSound() {
         if (!this.walkingAudioActive) {
             return;
@@ -132,30 +145,54 @@ class Charakter extends MovableObject {
         }
 
         this.walkingFadeInterval = setInterval(() => {
-            const nextVolume = Math.max(0, this.walking_sound.volume - 0.08);
-            this.walking_sound.volume = nextVolume;
-
-            if (nextVolume <= 0) {
-                clearInterval(this.walkingFadeInterval);
-                this.walkingFadeInterval = null;
-                this.walking_sound.pause();
-                this.walkingAudioActive = false;
-                this.walking_sound.volume = this.walkingVolume;
-            }
+            this.fadeWalkingSoundStep();
         }, 30);
     }
 
+    /** Applies one fade-out step to the walking sound. */
+    fadeWalkingSoundStep() {
+        const nextVolume = Math.max(0, this.walking_sound.volume - 0.08);
+        this.walking_sound.volume = nextVolume;
+        if (nextVolume <= 0) {
+            this.finishWalkingSoundFade();
+        }
+    }
+
+    /** Finishes the walking sound fade-out. */
+    finishWalkingSoundFade() {
+        clearInterval(this.walkingFadeInterval);
+        this.walkingFadeInterval = null;
+        this.walking_sound.pause();
+        this.walkingAudioActive = false;
+        this.walking_sound.volume = this.walkingVolume;
+    }
+
+    /** Applies mute state to Pepe's sounds. */
+    setMuted(isMuted) {
+        this.walking_sound.muted = isMuted;
+        this.jump_sound.muted = isMuted;
+
+        if (isMuted) {
+            this.stopWalkingSound();
+        }
+    }
+
+    /** Starts Pepe's walking sound when audio is enabled. */
     startWalkingSound() {
-        if (this.walkingFadeInterval) {
-            clearInterval(this.walkingFadeInterval);
-            this.walkingFadeInterval = null;
-            this.walking_sound.volume = this.walkingVolume;
+        if (typeof isGameMuted === "function" && isGameMuted()) {
+            return;
         }
 
+        this.cancelWalkingFade();
         if (this.walkingAudioActive) {
             return;
         }
 
+        this.playWalkingSound();
+    }
+
+    /** Starts the walking sound playback. */
+    playWalkingSound() {
         this.walking_sound.volume = this.walkingVolume;
         this.walkingAudioActive = true;
         this.walking_sound.play().catch(() => {
@@ -163,95 +200,173 @@ class Charakter extends MovableObject {
         });
     }
 
-    animate() {
-        setInterval(() => {
-            if (!this.world || !this.world.keyboard) {
-                return;
-            }
+    /** Cancels a running walking sound fade. */
+    cancelWalkingFade() {
+        if (!this.walkingFadeInterval) {
+            return;
+        }
 
-            if (this.isDead()) {
-                this.resetIdleTimer();
-                this.stopWalkingSound();
-                return;
-            }
-
-            const maxX = this.getMaxX();
-
-            const isMovingRight = this.world.keyboard.right && this.x < maxX;
-            const isMovingLeft = this.world.keyboard.left && this.x > 0;
-            const isMoving = this.isMoving();
-
-            if (isMoving || this.isThrowingBottle()) {
-                this.resetIdleTimer();
-            }
-
-            if (isMoving) {
-                this.startWalkingSound();
-            } else {
-                this.stopWalkingSound();
-            }
-
-            if (isMovingRight) {
-                this.moveRight();
-                this.otherDirection = false;
-            } else if (isMovingLeft) {
-                this.moveLeft();
-                this.otherDirection = true;
-            }
-
-            this.x = Math.max(0, Math.min(this.x, maxX));
-
-            if (this.world.keyboard.space && !this.isAboveGround()) {
-                this.resetIdleTimer();
-                this.jump_sound.currentTime = 0;
-                this.jump_sound.play().catch(() => { });
-                this.jump();
-            }
-
-            if (typeof this.world.updateCameraX === "function") {
-                this.world.updateCameraX();
-            } else {
-                this.world.camera_x = -this.x + 100;
-            }
-        }, 1000 / 60); // 60 FPS
-
-        setInterval(() => {
-            if (this.isDead()) {
-                this.resetIdleTimer();
-                if (!this.deathAnimationStarted) {
-                    this.currentImageIndex = 0;
-                    this.activeAnimation = null;
-                    this.deathAnimationStarted = true;
-                }
-
-                this.stopWalkingSound();
-                this.playCharacterAnimation(this.IMAGES_DEAD);
-            } else if (this.isHurt()) {
-                this.resetIdleTimer();
-                this.deathAnimationStarted = false;
-                this.playCharacterAnimation(this.IMAGES_HURT);
-            } else if (this.isAboveGround()) {
-                this.resetIdleTimer();
-                this.deathAnimationStarted = false;       
-                this.playCharacterAnimation(this.IMAGES_JUMPING);
-            } else {
-                this.deathAnimationStarted = false;
-                if (!this.world || !this.world.keyboard) {
-                    return;
-                }
-                if (this.isMoving()) {
-                    this.resetIdleTimer();
-                    this.playCharacterAnimation(this.IMAGES_WALKING);
-                } else if (this.isThrowingBottle()) {
-                    this.resetIdleTimer();
-                    this.playCharacterAnimation(this.IMAGES_IDLE);
-                } else {
-                    this.playCharacterAnimation(this.getIdleAnimation());
-                }
-            }
-        }, 50);
+        clearInterval(this.walkingFadeInterval);
+        this.walkingFadeInterval = null;
+        this.walking_sound.volume = this.walkingVolume;
     }
 
+    /** Updates Pepe's visible animation state. */
+    updateCharacterAnimation() {
+        if (typeof isGamePaused === "function" && isGamePaused()) {
+            return;}
+        if (this.isDead()) {
+            this.playDeathStateAnimation();
+            return;}
+        if (this.isHurt()) {
+            this.playHurtStateAnimation();
+            return;}
+        if (this.isAboveGround()) {
+            this.playAirStateAnimation();
+            return;}
+        this.playGroundStateAnimation();
+    }
+
+    /** Plays the death animation state. */
+    playDeathStateAnimation() {
+        this.resetIdleTimer();
+        if (!this.deathAnimationStarted) {
+            this.currentImageIndex = 0;
+            this.activeAnimation = null;
+            this.deathAnimationStarted = true;
+        }
+        this.stopWalkingSound();
+        this.playCharacterAnimation(this.IMAGES_DEAD);
+    }
+
+    /** Plays the hurt animation state. */
+    playHurtStateAnimation() {
+        this.resetIdleTimer();
+        this.deathAnimationStarted = false;
+        this.playCharacterAnimation(this.IMAGES_HURT);
+    }
+
+    /** Plays the jump animation state. */
+    playAirStateAnimation() {
+        this.resetIdleTimer();
+        this.deathAnimationStarted = false;
+        this.playCharacterAnimation(this.IMAGES_JUMPING);
+    }
+
+    /** Plays the grounded animation state. */
+    playGroundStateAnimation() {
+        this.deathAnimationStarted = false;
+        if (!this.world || !this.world.keyboard) {
+            return;}
+        if (this.isMoving()) {
+            this.playMovingAnimation();
+            return;}
+        if (this.isThrowingBottle()) {
+            this.playThrowingAnimation();
+            return;}
+        this.playCharacterAnimation(this.getIdleAnimation());
+    }
+
+    /** Plays the walking animation. */
+    playMovingAnimation() {
+        this.resetIdleTimer();
+        this.playCharacterAnimation(this.IMAGES_WALKING);
+    }
+
+    /** Plays the throwing animation. */
+    playThrowingAnimation() {
+        this.resetIdleTimer();
+        this.playCharacterAnimation(this.IMAGES_IDLE);
+    }
+
+    /** Starts Pepe's movement and animation loops. */
+    animate() {
+        setInterval(() => this.updateMovementFrame(), 1000 / 60);
+        setInterval(() => this.updateCharacterAnimation(), 50);
+    }
+
+    /** Updates one movement frame. */
+    updateMovementFrame() {
+        if (this.shouldSkipMovementFrame()) {
+            return;
+        }
+        const maxX = this.getMaxX();
+        this.updateMovementAudio();
+        this.updateHorizontalMovement(maxX);
+        this.updateJumpInput();
+        this.updateCameraPosition();
+    }
+
+    /** Checks whether movement should be skipped. */
+    shouldSkipMovementFrame() {
+        if (typeof isGamePaused === "function" && isGamePaused()) {
+            this.stopWalkingSound();
+            return true;
+        }
+        return !this.world || !this.world.keyboard || this.handleDeadMovementState();
+    }
+
+    /** Handles dead movement state. */
+    handleDeadMovementState() {
+        if (!this.isDead()) {
+            return false;
+        }
+        this.resetIdleTimer();
+        this.stopWalkingSound();
+        return true;
+    }
+
+    /** Updates walking audio from current input. */
+    updateMovementAudio() {
+        if (this.isMoving() || this.isThrowingBottle()) {
+            this.resetIdleTimer();
+        }
+        if (this.isMoving()) {
+            this.startWalkingSound();
+        } else {
+            this.stopWalkingSound();
+        }
+    }
+
+    /** Updates horizontal movement and facing direction. */
+    updateHorizontalMovement(maxX) {
+        if (this.world.keyboard.right && this.x < maxX) {
+            this.moveRight();
+            this.otherDirection = false;
+        } else if (this.world.keyboard.left && this.x > 0) {
+            this.moveLeft();
+            this.otherDirection = true;
+        }
+        this.x = Math.max(0, Math.min(this.x, maxX));
+    }
+
+    /** Applies jump input when Pepe is grounded. */
+    updateJumpInput() {
+        if (!this.world.keyboard.space || this.isAboveGround()) {
+            return;
+        }
+        this.resetIdleTimer();
+        this.playJumpSound();
+        this.jump();
+    }
+
+    /** Plays Pepe's jump sound. */
+    playJumpSound() {
+        this.jump_sound.currentTime = 0;
+        this.jump_sound.muted = typeof isGameMuted === "function" && isGameMuted();
+        this.jump_sound.play().catch(() => { });
+    }
+
+    /** Updates the world camera position. */
+    updateCameraPosition() {
+        if (typeof this.world.updateCameraX === "function") {
+            this.world.updateCameraX();
+        } else {
+            this.world.camera_x = -this.x + 100;
+        }
+    }
+
+    /** Creates Pepe and preloads his assets. */
     constructor() {
         super().loadImage("img/2_character_pepe/1_idle/idle/I-1.png");
         this.loadImages(this.IMAGES_WALKING);
@@ -268,7 +383,3 @@ class Charakter extends MovableObject {
     }
 
 }
-
-moveRight = () => {
-    this.x += this.speed;
-};

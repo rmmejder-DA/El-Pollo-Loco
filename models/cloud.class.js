@@ -5,6 +5,7 @@ class Cloud extends MovableObject {
     speed = 0.35;
     levelEndX = 3600;
 
+    /** Creates a moving cloud. */
     constructor(startX = 200 + Math.random() * 500, levelEndX = 3600) {
         super().loadImage("img/5_background/layers/4_clouds/1.png");
         this.x = startX;
@@ -12,8 +13,13 @@ class Cloud extends MovableObject {
         this.levelEndX = levelEndX;
         this.animate();
     }
-    animate() {// Bewegt die Wolke langsam nach links
+    /** Starts the cloud movement loop. */
+    animate() {
         setInterval(() => {
+            if (typeof isGamePaused === "function" && isGamePaused()) {
+                return;
+            }
+
             this.moveLeft();
             if (this.x + this.width < -720) {
                 this.x = this.levelEndX + Math.random() * 720;
@@ -21,6 +27,4 @@ class Cloud extends MovableObject {
             }
         }, 1000 / 60);
     }
-
-
 }

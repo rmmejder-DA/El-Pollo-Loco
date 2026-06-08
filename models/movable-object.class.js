@@ -1,5 +1,4 @@
 class MovableObject extends DrawableObject {
-
     currentImageIndex = 0;
     speed = 0.15;
     otherDirection = false;
@@ -8,19 +7,32 @@ class MovableObject extends DrawableObject {
     energy = 100;
     lastHit = 0;
 
+    /** Applies gravity to the object. */
     applyGravity() {
         setInterval(() => {
-            if (this.isAboveGround() || this.speedY > 0) {
-                this.y -= this.speedY;
-                this.speedY -= this.acceleration;
-
-                if (typeof this.groundY === "number" && this.y > this.groundY) {
-                    this.y = this.groundY;
-                    this.speedY = 0;
-                }
-            }
+            if (typeof isGamePaused === "function" && isGamePaused()) {
+                return;}
+            this.updateGravityFrame();
         }, 1000 / 25);
     }
+
+    /** Updates one gravity frame. */
+    updateGravityFrame() {
+        if (this.isAboveGround() || this.speedY > 0) {
+            this.y -= this.speedY;
+            this.speedY -= this.acceleration;
+            this.snapToGroundWhenNeeded();
+        }
+    }
+
+    /** Snaps the object back to the ground when needed. */
+    snapToGroundWhenNeeded() {
+        if (typeof this.groundY === "number" && this.y > this.groundY) {
+            this.y = this.groundY;
+            this.speedY = 0;
+        }
+    }
+    /** Checks whether the object is above its ground. */
     isAboveGround() {
         if (this instanceof ThrowableObject) {
             return true;
@@ -31,25 +43,32 @@ class MovableObject extends DrawableObject {
     }
 
 
+    /** Draws the debug collision frame. */
     drawFrame(ctx) {
-        if (this instanceof Character || this instanceof Chicken) {
+        if (this instanceof Charakter || this instanceof Chicken) {
+            const box = this.getCollisionBox();
             ctx.beginPath();
             ctx.lineWidth = "5";
             ctx.strokeStyle = "blue";
-            ctx.rect(this.x, this.y, this.width, this.height);
+            ctx.rect(box.x, box.y, box.width, box.height);
             ctx.stroke();
         }
     }
-    // Kollisionserkennung
+
+    /** Checks collision against another object. */
     isColliding(mo) {
+        const ownBox = this.getCollisionBox();
+        const otherBox = mo.getCollisionBox();
+
         return (
-            this.x + this.width > mo.x &&
-            this.x < mo.x + mo.width &&
-            this.y + this.height > mo.y &&
-            this.y < mo.y + mo.height
+            ownBox.x + ownBox.width > otherBox.x &&
+            ownBox.x < otherBox.x + otherBox.width &&
+            ownBox.y + ownBox.height > otherBox.y &&
+            ownBox.y < otherBox.y + otherBox.height
         );
     }
 
+    /** Applies damage to the object. */
     hit() {
         if (this.isDead() || this.isHurt()) {
             return;
@@ -63,15 +82,18 @@ class MovableObject extends DrawableObject {
         this.lastHit = new Date().getTime();
     }
 
+    /** Checks whether the object has no energy. */
     isDead() {
         return this.energy == 0;
     }
 
+    /** Checks whether the object was hit recently. */
     isHurt() {
         let timePassed = new Date().getTime() - this.lastHit;// Zeit seit letztem Treffer
         timePassed = timePassed / 1000;// in Sekunden
         return timePassed < 1;// Ist die Figur in den letzten 1 Sekunden getroffen worden?
     }
+    /** Plays the next image from an animation. */
     playAnimation = (images) => {
         let i = this.currentImageIndex % images.length;//% sorgt dafür, dass der Index immer im Bereich der Array-Länge bleibt
         // i = 0, 1, 2, 3, 4, 5, 0, 1, ...
@@ -79,14 +101,17 @@ class MovableObject extends DrawableObject {
         this.img = this.imageCache[path];
         this.currentImageIndex++;
     }
+    /** Moves the object left. */
     moveLeft = () => {
         this.x -= this.speed;
     };
 
+    /** Moves the object right. */
     moveRight = () => {
         this.x += this.speed;
     };
 
+    /** Starts an upward jump. */
     jump() {
         this.speedY = 30;
     }

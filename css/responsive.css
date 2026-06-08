@@ -1,0 +1,74 @@
+@media only screen and (max-width: 1200px) {
+    .help-mobile-text {
+        position: absolute;
+    }
+
+    p {
+        margin: 6px 0;
+    }
+
+    .start-button {
+        top: 24px;
+        left: 50px;
+        font-size: 28px;
+        padding: 5px 20px;
+    }
+
+    .help-me-mobile {
+        display: block;
+        position: absolute;
+        top: 28px;
+        right: 120px;
+        z-index: 1000;
+    }
+
+    .help-me-container {
+        display: none;
+    }
+
+    #fullscreen {
+        min-height: 100dvh;
+        padding: 0;
+    }
+
+    .loading-screen {
+        width: min(100vw - 16px, calc((100dvh - 16px) * 1.777));
+        max-height: calc(100dvh - 16px);
+    }
+
+    .loading-pepe {
+        width: min(135px, 22vw);
+    }
+
+    canvas {
+        width: min(100vw, calc(100dvh * 1.5));
+        aspect-ratio: 3 / 2;
+        height: auto;
+        max-height: none;
+        object-fit: contain;
+    }
+
+    .fullscreen-button {
+        display: none !important;
+    }
+}
+
+@media only screen and (max-width: 900px) and (orientation: portrait) {
+    .orientation-hint {
+        display: flex;
+    }
+}
+
+@media only screen and (max-width: 770px) {
+    .start-button {
+        top: 16px;
+        left: 16px;
+        font-size: 22px;
+        padding: 4px 16px;
+    }
+
+    .help-me-mobile {
+        top: 16px;
+        right: 80px;
+    }
+}
