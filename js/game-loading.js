@@ -18,7 +18,7 @@ function preloadImage(src) {
  * @returns {Promise<void>} A promise that resolves after the delay.
  */
 function wait(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, 5000));
 }
 
 /**
