@@ -1,4 +1,5 @@
 class Endboss extends MovableObject {
+    energy = 100;
     height = 400;
     width = 250;
     y = 50;
@@ -220,6 +221,7 @@ class Endboss extends MovableObject {
         if (this.energy === previousEnergy || !this.world || !this.world.character) {
             return;
         }
+        this.world.spawnBossBottleDrops?.(1);
         this.attackingUntil = 0;
         this.knockbackDirection = this.world.character.x < this.x ? 1 : -1;
         this.knockbackUntil = Date.now() + this.knockbackDurationMs;

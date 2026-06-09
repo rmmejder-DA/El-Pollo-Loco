@@ -100,9 +100,22 @@
             <button class="close-button" onclick="toggleKeyboardInfo()">Close</button>
         </div>
 
+        <div id="impressumScreen" class="impressum-screen hidden">
+            <div class="impressum-card">
+                <h2>Impressum</h2>
+                <p>Name / Firma: Max Mejder</p>
+                <p>Anschrift: Almendorfer Str 15, 36100 Petersberg</p>
+                <p>E-Mail: rmmejder@gmail.com</p>
+                <p>Verantwortlich für den Inhalt: Max Mejder</p>
+                <p class="impressum-note">Dieses Spiel ist ausschließlich zur privaten Nutzung bestimmt. Eine gewerbliche Nutzung oder Weitergabe ist nicht gestattet.</p>
+                <button class="close-button" onclick="toggleImpressum()">Close</button>
+            </div>
+        </div>
+
         <div id="startScreen" class="start-screen">
             <img src="img/9_intro_outro_screens/start/startscreen_1.png" alt="Startscreen 1">
             <button class="start-button" onclick="startGame()">START</button>
+            <button class="impressum-button" onclick="toggleImpressum()">IMPRESSUM</button>
             <div class="help-me-mobile" role="button" tabindex="0" onclick="toggleMobileHelp()">
                 <p class="help-mobile-text">HELP</p>
             </div>

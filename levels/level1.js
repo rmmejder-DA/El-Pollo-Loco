@@ -38,20 +38,21 @@ function createBottles() {
     });
 }
 
-/**
- * Calculates the level end position.
+/*** Calculates the level end position.
  * @param {BackgroundObject[]} backgroundObjects - The background layers.
- * @returns {number} The far right level edge.
- */
+ * @returns {number} The far right level edge.*/
 function getLevelEndX(backgroundObjects) {
-    return Math.max(...backgroundObjects.map((object) => object.x + object.width));
+    if (!Array.isArray(backgroundObjects) || backgroundObjects.length === 0) {
+        return 719 * 5;
+    }
+
+    const lastBackground = backgroundObjects[backgroundObjects.length - 1];
+    return lastBackground.x + lastBackground.width;
 }
 
-/**
- * Creates moving clouds for the level.
+/*** Creates moving clouds for the level.
  * @param {number} levelEndX - The level end x for cloud wrapping.
- * @returns {Cloud[]} The created clouds.
- */
+ * @returns {Cloud[]} The created clouds.*/
 function createClouds(levelEndX) {
     return Array.from({ length: 8 }, (_, index) => {
         const x = -500 + index * 560 + Math.random() * 160;

@@ -22,9 +22,10 @@ class WorldRenderer {
     /** Draws camera-bound world objects. */
     drawWorldObjects() {
         const world = this.world;
-        world.ctx.translate(world.camera_x, 0);
+        const cameraX = Math.round(world.camera_x);
+        world.ctx.translate(cameraX, 0);
         this.drawWorldObjectLayers();
-        world.ctx.translate(-world.camera_x, 0);
+        world.ctx.translate(-cameraX, 0);
     }
 
     /** Draws all gameplay object layers. */

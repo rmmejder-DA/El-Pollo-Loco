@@ -258,10 +258,15 @@ class World extends DrawableObject {
      * @param {number} amount - The number of bottles to add.
      */
     addBossBottleDrops(endboss, amount) {
-        const direction = this.character.x < endboss.x ? -1 : 1;
+        const direction = this.character.x <= endboss.x ? -1 : 1;
         const startX = this.getBossBottleStartX(endboss, direction);
+        const startY = this.getBossBottleStartY(endboss);
         for (let i = 0; i < amount; i++) {
-            this.level.bottles.push(new BottlePickup(startX + direction * i * 70, 355));
+            this.level.bottles.push(new BottlePickup(
+                startX + direction * i * 18,
+                startY,
+                this.getBossBottleDropMotion(direction, i)
+            ));
         }
     }
 
@@ -272,7 +277,31 @@ class World extends DrawableObject {
      * @returns {number} The first bottle x position.
      */
     getBossBottleStartX(endboss, direction) {
-        return direction < 0 ? endboss.x - 80 : endboss.x + endboss.width + 30;
+        return direction < 0 ? endboss.x + 20 : endboss.x + endboss.width - 80;
+    }
+
+    /**
+     * Calculates the boss bottle spawn y position near the beak.
+     * @param {Endboss} endboss - The endboss instance.
+     * @returns {number} The bottle spawn y position.
+     */
+    getBossBottleStartY(endboss) {
+        return endboss.y + 135;
+    }
+
+    /**
+     * Builds the spawn motion for one boss-spit bottle.
+     * @param {number} direction - The spit direction (-1 or 1).
+     * @param {number} index - The bottle index within the spit batch.
+     * @returns {{settleY: number, velocityX: number, velocityY: number, gravity: number}} The motion config.
+     */
+    getBossBottleDropMotion(direction, index) {
+        return {
+            settleY: 355,
+            velocityX: direction * (2.8 + index * 0.35),
+            velocityY: -(6.2 + index * 0.7),
+            gravity: 0.42
+        };
     }
 
     /** Wires world references into actors. */
@@ -408,6 +437,9 @@ class World extends DrawableObject {
      * @returns {number} The gate x limit before the boss.
      */
     getBossGateMaxX(levelMaxX, endboss) {
+        if (endboss.energy <= 50) {
+            return Math.max(0, levelMaxX);
+        }
         const bossGateX = endboss.x - this.character.width + 40;
         return Math.max(0, Math.min(levelMaxX, bossGateX));
     }
@@ -418,7 +450,7 @@ class World extends DrawableObject {
             return;
         }
         const maxOffset = Math.max(0, this.level.level_end_x - this.canvas.width);
-        this.camera_x = -Math.min(maxOffset, Math.max(0, this.character.x - 100));
+        this.camera_x = Math.round(-Math.min(maxOffset, Math.max(0, this.character.x - 100)));
     }
 
     /** Delegates frame rendering to the renderer. */

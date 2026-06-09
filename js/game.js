@@ -1,6 +1,4 @@
-/**
- * Initializes canvas, audio and controls after the page loads.
- */
+/*** Initializes canvas, audio and controls after the page loads.*/
 function init() {
     canvas = document.getElementById("polloCanvas");
     configureGlobalAudio();
@@ -9,59 +7,44 @@ function init() {
     initKeyboardInfo();
 }
 
-/**
- * Configures shared audio defaults.
- */
+/*** Configures shared audio defaults.*/
 function configureGlobalAudio() {
     pepeDeadSound.preload = "auto";
     pepeDeadSound.volume = 0.45;
     gameSound.preload = "auto";
-    gameSound.volume = 0.1;
+    gameSound.volume = 0.015;
     gameSound.loop = true;
 }
 
-/**
- * Registers the recurring win and game-over check.
- */
+/*** Registers the recurring win and game-over check.*/
 function startGameStateWatcher() {
     setInterval(() => {
-        if (shouldSkipStateWatcher()) {
-            return;
-        }
-
+        if (shouldSkipStateWatcher()) {return;}
         checkCharacterGameOver();
         checkEndbossWin();
     }, 100);
 }
 
-/**
- * Checks whether the state watcher should pause.
- * @returns {boolean} True when watcher work should be skipped.
- */
+/*** Checks whether the state watcher should pause.
+ * @returns {boolean} True when watcher work should be skipped.*/
 function shouldSkipStateWatcher() {
     return !world || !world.character || gamePaused;
 }
 
-/**
- * Shows game over when Pepe is dead.
- */
+/*** Shows game over when Pepe is dead.*/
 function checkCharacterGameOver() {
     if (!gameOverShown && !winShown && isCharacterDefeated()) {
         showGameOverScreen();
     }
 }
 
-/**
- * Checks whether Pepe is defeated (dead or empty health bar).
- * @returns {boolean} True when Pepe should be game over.
- */
+/*** Checks whether Pepe is defeated (dead or empty health bar).
+ * @returns {boolean} True when Pepe should be game over.*/
 function isCharacterDefeated() {
     return world.character.isDead() || world.character.energy < 20;
 }
 
-/**
- * Shows win when the endboss is dead.
- */
+/*** Shows win when the endboss is dead.*/
 function checkEndbossWin() {
     const endboss = world.getEndboss?.();
     if (!gameOverShown && !winShown && endboss?.isDead()) {
@@ -69,51 +52,37 @@ function checkEndbossWin() {
     }
 }
 
-/**
- * Handles keyboard down input.
- * @param {KeyboardEvent} event - The keyboard event.
- */
+/*** Handles keyboard down input.
+ * @param {KeyboardEvent} event - The keyboard event.*/
 function handleGlobalKeyDown(event) {
-    if (gamePaused) {
-        return;
-    }
-
+    if (gamePaused) {return;}
     if (keyboard.handleKeyDown(event)) {
-        syncWalkingAudioFromInput();
-    }
+        syncWalkingAudioFromInput();}
 }
 
-/**
- * Handles keyboard up input.
- * @param {KeyboardEvent} event - The keyboard event.
- */
+/*** Handles keyboard up input.
+ * @param {KeyboardEvent} event - The keyboard event.*/
 function handleGlobalKeyUp(event) {
     if (keyboard.handleKeyUp(event)) {
         syncWalkingAudioFromInput();
     }
 }
 
-/**
- * Registers one managed interval.
+/*** Registers one managed interval.
  * @param {Function} fn - The interval callback.
- * @param {number} time - The interval delay.
- */
+ * @param {number} time - The interval delay.*/
 function stopIntervals(fn, time) {
     const id = setInterval(fn, time);
     intervalId.push(id);
 }
 
-/**
- * Stops tracked intervals and shows a game over alert.
- */
+/*** Stops tracked intervals and shows a game over alert.*/
 function stopGame() {
     intervalId.forEach((id) => clearInterval(id));
     alert("Game Over!");
 }
 
-/**
- * Clears all tracked intervals.
- */
+/*** Clears all tracked intervals.*/
 function clearIntervals() {
     intervalId.forEach((id) => clearInterval(id));
     intervalId = [];

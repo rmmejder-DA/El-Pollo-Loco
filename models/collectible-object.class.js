@@ -67,15 +67,63 @@ class Coin extends CollectibleObject {
 }
 
 class BottlePickup extends CollectibleObject {
+    settleY;
+    velocityX = 0;
+    velocityY = 0;
+    gravity = 0.45;
+    isSpawning = false;
+
     /**
      * Creates a bottle pickup.
      * @param {number} x - The x position.
      * @param {number} y - The y position.
+     * @param {object} [options={}] - Optional spawn motion settings.
      */
-    constructor(x, y) {
+    constructor(x, y, options = {}) {
         const image = Math.random() < 0.5
             ? "img/6_salsa_bottle/1_salsa_bottle_on_ground.png"
             : "img/6_salsa_bottle/2_salsa_bottle_on_ground.png";
         super(image, x, y, 60, 70);
+        this.setupSpawnMotion(y, options);
+    }
+
+    /**
+     * Configures optional spawn motion for boss-spit bottles.
+     * @param {number} y - The initial bottle y position.
+     * @param {object} options - Optional spawn motion settings.
+     */
+    setupSpawnMotion(y, options) {
+        this.settleY = typeof options.settleY === "number" ? options.settleY : y;
+        this.velocityX = options.velocityX || 0;
+        this.velocityY = options.velocityY || 0;
+        this.gravity = options.gravity || this.gravity;
+        this.isSpawning = this.velocityX !== 0 || this.velocityY !== 0 || this.settleY !== y;
+    }
+
+    /**
+     * Draws the bottle and advances its spawn arc when active.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.
+     */
+    draw(ctx) {
+        if (this.isSpawning && (typeof isGamePaused !== "function" || !isGamePaused())) {
+            this.updateSpawnMotion();
+        }
+        super.draw(ctx);
+    }
+
+    /** Advances one spawn-motion step until the bottle reaches the floor. */
+    updateSpawnMotion() {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        this.velocityY += this.gravity;
+
+        if (this.y < this.settleY) {
+            return;
+        }
+
+        this.y = this.settleY;
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.isSpawning = false;
     }
 }

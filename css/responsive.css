@@ -53,7 +53,7 @@
     }
 }
 
-@media only screen and (max-width: 1440px) and (orientation: portrait) {
+@media only screen and (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
     .orientation-hint {
         display: flex;
     }

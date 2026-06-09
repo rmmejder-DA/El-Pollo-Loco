@@ -1,31 +1,30 @@
-/**
- * Hides start and end screens before gameplay begins.
- */
+/*** Hides start and end screens before gameplay begins.*/
 function hideMenuScreens() {
     hideElementById("startScreen");
     hideElementById("gameOverScreen");
     hideElementById("winScreen");
+    hideElementById("impressumScreen");
 }
 
-/**
- * Hides one element by id.
+/*** Hides one element by id.
  * @param {string} id - The element id.
  */
 function hideElementById(id) {
     document.getElementById(id)?.classList.add("hidden");
 }
 
-/**
- * Shows one element by id.
- * @param {string} id - The element id.
- */
+/*** Shows one element by id.
+ * @param {string} id - The element id.*/
 function showElementById(id) {
     document.getElementById(id)?.classList.remove("hidden");
 }
 
-/**
- * Prepares the page for the loading screen.
- */
+/*** Toggles the impressum overlay.*/
+function toggleImpressum() {
+    document.getElementById("impressumScreen")?.classList.toggle("hidden");
+}
+
+/*** Prepares the page for the loading screen.*/
 function prepareGameScreen() {
     hideMenuScreens();
     canvas?.classList.add("hidden");
@@ -36,24 +35,19 @@ function prepareGameScreen() {
     setGamePaused(false);
 }
 
-/**
- * Shows the canvas and active gameplay controls.
- */
+/*** Shows the canvas and active gameplay controls.*/
 function activateGameScreen() {
     canvas?.classList.remove("hidden");
     setFullscreenButtonVisible(true);
     setMobileControlsVisible(true);
 }
 
-/**
- * Starts a new game from the start screen.
- * @returns {Promise<void>} A promise that resolves after the game starts.
- */
+/*** Starts a new game from the start screen.
+ * @returns {Promise<void>} A promise that resolves after the game starts.*/
 async function startGame() {
     if (loadingShown || (world && !gameOverShown && !winShown)) {
         return;
     }
-
     requestFullscreenOnMobileStart();
     startGameSound();
     prepareGameScreen();
@@ -62,9 +56,7 @@ async function startGame() {
     finishGameStart();
 }
 
-/**
- * Builds the initial level and world instance.
- */
+/*** Builds the initial level and world instance.*/
 function buildFreshWorld() {
     initLevel1();
     if (!world) {
@@ -72,9 +64,7 @@ function buildFreshWorld() {
     }
 }
 
-/**
- * Applies the final state after starting gameplay.
- */
+/*** Applies the final state after starting gameplay.*/
 function finishGameStart() {
     applyMuteState();
     gameOverShown = false;
@@ -82,14 +72,11 @@ function finishGameStart() {
     activateGameScreen();
 }
 
-/**
- * Shows the game over screen once.
- */
+/*** Shows the game over screen once.*/
 function showGameOverScreen() {
     if (gameOverShown || winShown) {
         return;
     }
-
     gameOverShown = true;
     stopGameSound();
     playPepeDeadSound();
@@ -98,22 +85,15 @@ function showGameOverScreen() {
     setTimeout(() => setGamePaused(true), 600);
 }
 
-/**
- * Plays Pepe's death sound.
- */
+/*** Plays Pepe's death sound.*/
 function playPepeDeadSound() {
     pepeDeadSound.currentTime = 0;
     pepeDeadSound.play().catch(() => { });
 }
 
-/**
- * Shows the win screen once.
- */
+/*** Shows the win screen once.*/
 function showWinScreen() {
-    if (winShown || gameOverShown) {
-        return;
-    }
-
+    if (winShown || gameOverShown) {return;}
     winShown = true;
     setGamePaused(false);
     stopGameSound();
@@ -121,9 +101,7 @@ function showWinScreen() {
     setMobileControlsVisible(false);
 }
 
-/**
- * Restarts gameplay after win or game over.
- */
+/*** Restarts gameplay after win or game over.*/
 function restartGame() {
     hideMenuScreens();
     resetRestartInputAndAudio();
@@ -132,9 +110,7 @@ function restartGame() {
     finishRestartState();
 }
 
-/**
- * Clears input and audio before restarting.
- */
+/*** Clears input and audio before restarting.*/
 function resetRestartInputAndAudio() {
     keyboard.reset();
     setGamePaused(false);
@@ -142,21 +118,16 @@ function resetRestartInputAndAudio() {
     stopGameSound();
 }
 
-/**
- * Reuses or creates the world for a restart.
- */
+/*** Reuses or creates the world for a restart.*/
 function resetWorldForRestart() {
     if (!world) {
         world = new World(canvas, keyboard);
         return;
     }
-
     resetExistingWorldForRestart();
 }
 
-/**
- * Resets an existing world instance for restart.
- */
+/*** Resets an existing world instance for restart.*/
 function resetExistingWorldForRestart() {
     world.level = level1;
     world.character = new Charakter();
@@ -165,9 +136,7 @@ function resetExistingWorldForRestart() {
     resetRestartEndboss();
 }
 
-/**
- * Recreates world status bars.
- */
+/*** Recreates world status bars.*/
 function resetWorldBars() {
     world.statusBar = new StatusBar();
     world.coinStatusBar = createCoinStatusBar();
@@ -175,10 +144,8 @@ function resetWorldBars() {
     world.endbossStatusBar = createEndbossStatusBar();
 }
 
-/**
- * Creates the coin status bar.
- * @returns {StatusBar} The coin status bar.
- */
+/*** Creates the coin status bar.
+ * @returns {StatusBar} The coin status bar.*/
 function createCoinStatusBar() {
     return new StatusBar([
         "img/7_statusbars/1_statusbar/1_statusbar_coin/green/0.png",
@@ -190,10 +157,8 @@ function createCoinStatusBar() {
     ], 20, 70);
 }
 
-/**
- * Creates the bottle status bar.
- * @returns {StatusBar} The bottle status bar.
- */
+/*** Creates the bottle status bar.
+ * @returns {StatusBar} The bottle status bar.*/
 function createBottleStatusBar() {
     return new StatusBar([
         "img/7_statusbars/1_statusbar/3_statusbar_bottle/green/0.png",
@@ -205,10 +170,8 @@ function createBottleStatusBar() {
     ], 20, 120);
 }
 
-/**
- * Creates the endboss status bar.
- * @returns {StatusBar} The endboss status bar.
- */
+/*** Creates the endboss status bar.
+ * @returns {StatusBar} The endboss status bar.*/
 function createEndbossStatusBar() {
     return new StatusBar([
         "img/7_statusbars/2_statusbar_endboss/green/green0.png",
@@ -220,9 +183,7 @@ function createEndbossStatusBar() {
     ], canvas.width - 220, 20);
 }
 
-/**
- * Resets transient world runtime fields.
- */
+/*** Resets transient world runtime fields.*/
 function resetWorldRuntimeState() {
     world.showEndbossStatusBar = false;
     world.bossPhaseStarted = false;
@@ -232,22 +193,15 @@ function resetWorldRuntimeState() {
     world.setWorld();
 }
 
-/**
- * Resets the endboss animation state after restart.
- */
+/*** Resets the endboss animation state after restart.*/
 function resetRestartEndboss() {
     const endboss = world.getEndboss?.();
-    if (!endboss) {
-        return;
-    }
-
+    if (!endboss) {return;}
     endboss.currentImageIndex = 0;
     endboss.isDeadAnimationStarted = false;
 }
 
-/**
- * Restores visible gameplay state after restart.
- */
+/*** Restores visible gameplay state after restart.*/
 function finishRestartState() {
     gameOverShown = false;
     winShown = false;

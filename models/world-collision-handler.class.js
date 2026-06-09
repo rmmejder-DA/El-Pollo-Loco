@@ -32,7 +32,6 @@ class WorldCollisionHandler {
         if (this.isEnemyStomped(enemy)) {
             this.defeatStompedEnemy(enemy, enemyIndex);
         } else {
-            this.blockCharacterAt(enemy);
             this.damageCharacter(5);
         }
     }
@@ -262,8 +261,6 @@ class WorldCollisionHandler {
     handleEndbossHitResult(endboss) {
         if (endboss.isDead()) {
             this.world.triggerWinAfterBossDefeat();
-        } else if (this.world.endbossBottleHits % 3 === 0) {
-            this.world.spawnBossBottleDrops(3);
         }
     }
 }

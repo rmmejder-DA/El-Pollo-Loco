@@ -39,7 +39,10 @@ class Charakter extends MovableObject {
         "img/2_character_pepe/3_jump/J-33.png",
         "img/2_character_pepe/3_jump/J-34.png",
         "img/2_character_pepe/3_jump/J-35.png",
-        "img/2_character_pepe/3_jump/J-36.png"
+        "img/2_character_pepe/3_jump/J-36.png",
+        "img/2_character_pepe/3_jump/J-37.png",
+        "img/2_character_pepe/3_jump/J-38.png",
+        "img/2_character_pepe/3_jump/J-39.png"
     ];
 
     IMAGES_IDLE = [
@@ -246,21 +249,7 @@ class Charakter extends MovableObject {
     playAirStateAnimation() {
         this.resetIdleTimer();
         this.deathAnimationStarted = false;
-        this.playJumpAnimationOnce();
-    }
-
-    /** Plays the jump animation once without looping. */
-    playJumpAnimationOnce() {
-        if (this.activeAnimation !== this.IMAGES_JUMPING) {
-            this.currentImageIndex = 0;
-            this.activeAnimation = this.IMAGES_JUMPING;
-        }
-        const lastIndex = this.IMAGES_JUMPING.length - 1;
-        const index = Math.min(this.currentImageIndex, lastIndex);
-        this.img = this.imageCache[this.IMAGES_JUMPING[index]];
-        if (this.currentImageIndex < lastIndex) {
-            this.currentImageIndex++;
-        }
+        this.playCharacterAnimation(this.IMAGES_JUMPING);
     }
 
     /** Plays the grounded animation state. */
@@ -315,7 +304,7 @@ class Charakter extends MovableObject {
             this.stopWalkingSound();
             return true;
         }
-        return !this.world || !this.world.keyboard || this.handleDeadMovementState();
+        return !this.world || !this.world.keyboard || this.handleDeadMovementState() || this.isHurt();
     }
 
     /*** Handles dead movement state.

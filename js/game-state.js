@@ -32,12 +32,10 @@ const LOADING_PRELOAD_IMAGES = [
 let gamePaused = loadStoredBoolean(STORAGE_KEY_GAME_PAUSED, false);
 let gameMuted = loadStoredBoolean(STORAGE_KEY_GAME_MUTED, false);
 
-/**
- * Reads a boolean value from local storage.
+/*** Reads a boolean value from local storage.
  * @param {string} key - The local storage key.
  * @param {boolean} fallback - The value to use when no stored value exists.
- * @returns {boolean} The stored boolean value.
- */
+ * @returns {boolean} The stored boolean value.*/
 function loadStoredBoolean(key, fallback) {
     try {
         const value = localStorage.getItem(key);
@@ -47,61 +45,47 @@ function loadStoredBoolean(key, fallback) {
     }
 }
 
-/**
- * Saves a boolean value to local storage.
+/*** Saves a boolean value to local storage.
  * @param {string} key - The local storage key.
- * @param {boolean} value - The value to store.
- */
+ * @param {boolean} value - The value to store.*/
 function saveStoredBoolean(key, value) {
     try {
         localStorage.setItem(key, String(value));
     } catch (error) { }
 }
 
-/**
- * Checks whether the viewport should use mobile controls.
- * @returns {boolean} True when the viewport is within the mobile width.
- */
+/*** Checks whether the viewport should use mobile controls.
+ * @returns {boolean} True when the viewport is within the mobile width.*/
 function isMobileViewport() {
     return window.matchMedia(`(max-width: ${MOBILE_FULLSCREEN_MAX_WIDTH}px)`).matches;
 }
 
-/**
- * Checks whether start should request fullscreen.
- * @returns {boolean} True when fullscreen should be requested on start.
- */
+/*** Checks whether start should request fullscreen.
+ * @returns {boolean} True when fullscreen should be requested on start.*/
 function isStartFullscreenViewport() {
     return isMobileViewport();
 }
 
-/**
- * Checks whether canvas touch controls should be drawn.
- * @returns {boolean} True when canvas controls are active.
- */
+/*** Checks whether canvas touch controls should be drawn.
+ * @returns {boolean} True when canvas controls are active.*/
 function shouldUseCanvasMobileControls() {
     return canvasMobileControlsActive && world && !loadingShown && !gameOverShown && !winShown && !gamePaused;
 }
 
-/**
- * Checks whether pause and mute controls should be drawn.
- * @returns {boolean} True when HUD controls should be visible.
- */
+/*** Checks whether pause and mute controls should be drawn.
+ * @returns {boolean} True when HUD controls should be visible.*/
 function shouldShowCanvasHudControls() {
     return world && !loadingShown && !gameOverShown && !winShown;
 }
 
-/**
- * Returns the current pause state.
- * @returns {boolean} True when the game is paused.
- */
+/*** Returns the current pause state.
+ * @returns {boolean} True when the game is paused.*/
 function isGamePaused() {
     return gamePaused;
 }
 
-/**
- * Returns the current mute state.
- * @returns {boolean} True when audio is muted.
- */
+/*** Returns the current mute state.
+ * @returns {boolean} True when audio is muted.*/
 function isGameMuted() {
     return gameMuted;
 }
