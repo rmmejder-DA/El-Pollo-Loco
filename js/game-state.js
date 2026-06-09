@@ -9,11 +9,11 @@ let pepeDeadSound = new Audio("audio/pepeDead.mp3");
 let gameSound = new Audio("audio/gameSound.mp3");
 let activeCanvasPointers = new Map();
 let canvasMobileControlsActive = false;
-let gamePaused = false;
-let gameMuted = false;
 let intervalId = [];
 let i = 1;
 
+const STORAGE_KEY_GAME_PAUSED = "elPolloLoco.gamePaused";
+const STORAGE_KEY_GAME_MUTED = "elPolloLoco.gameMuted";
 const LOADING_DURATION = 2200;
 const MOBILE_FULLSCREEN_MAX_WIDTH = 1200;
 const LOADING_PEPE_IMAGES = [
@@ -28,6 +28,35 @@ const LOADING_PRELOAD_IMAGES = [
     "img/5_background/second_half_background.png",
     ...LOADING_PEPE_IMAGES
 ];
+
+let gamePaused = loadStoredBoolean(STORAGE_KEY_GAME_PAUSED, false);
+let gameMuted = loadStoredBoolean(STORAGE_KEY_GAME_MUTED, false);
+
+/**
+ * Reads a boolean value from local storage.
+ * @param {string} key - The local storage key.
+ * @param {boolean} fallback - The value to use when no stored value exists.
+ * @returns {boolean} The stored boolean value.
+ */
+function loadStoredBoolean(key, fallback) {
+    try {
+        const value = localStorage.getItem(key);
+        return value === null ? fallback : value === "true";
+    } catch (error) {
+        return fallback;
+    }
+}
+
+/**
+ * Saves a boolean value to local storage.
+ * @param {string} key - The local storage key.
+ * @param {boolean} value - The value to store.
+ */
+function saveStoredBoolean(key, value) {
+    try {
+        localStorage.setItem(key, String(value));
+    } catch (error) { }
+}
 
 /**
  * Checks whether the viewport should use mobile controls.

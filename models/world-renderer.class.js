@@ -1,5 +1,8 @@
 class WorldRenderer {
-    /** Stores the world reference for rendering. */
+    /**
+     * Stores the world reference for rendering.
+     * @param {World} world - The world to render.
+     */
     constructor(world) {
         this.world = world;
     }
@@ -30,7 +33,6 @@ class WorldRenderer {
         this.addObjectsToMap(world.level.backgroundObjects || []);
         this.addObjectsToMap(world.level.clouds || []);
         this.addToMap(world.character);
-        this.drawCarriedBottle();
         this.addObjectsToMap(world.level.coins || []);
         this.addObjectsToMap(world.level.bottles || []);
         this.addObjectsToMap(world.level.enemies || []);
@@ -40,10 +42,26 @@ class WorldRenderer {
     /** Draws fixed screen overlays and controls. */
     drawScreenObjects() {
         this.drawStatusBars();
+        this.drawHealthHint();
         this.drawBossFightText();
         this.drawWinImage();
         this.world.canvasControls.drawMobileCanvasControls();
         this.world.canvasControls.drawCanvasHudControls();
+    }
+
+    /** Draws the heart hint when Pepe gained extra health. */
+    drawHealthHint() {
+        const world = this.world;
+        const timeLeft = world.healthHintUntil - Date.now();
+        if (timeLeft <= 0 || !this.canDrawObject({ img: world.heartHintImage })) {
+            return;
+        }
+        const ctx = world.ctx;
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, timeLeft / 600);
+        const offsetY = 20 - (1500 - timeLeft) / 60;
+        ctx.drawImage(world.heartHintImage, 215, 18 + offsetY, 40, 40);
+        ctx.restore();
     }
 
     /** Draws the status bars. */
@@ -60,14 +78,20 @@ class WorldRenderer {
         requestAnimationFrame(() => this.draw());
     }
 
-    /** Draws a list of objects. */
+    /**
+     * Draws a list of objects.
+     * @param {DrawableObject[]} objects - The objects to draw.
+     */
     addObjectsToMap(objects) {
         if (Array.isArray(objects)) {
             objects.forEach((object) => this.addToMap(object));
         }
     }
 
-    /** Draws one object when its image is ready. */
+    /**
+     * Draws one object when its image is ready.
+     * @param {DrawableObject} mo - The object to draw.
+     */
     addToMap(mo) {
         if (!this.canDrawObject(mo)) {
             return;
@@ -79,12 +103,19 @@ class WorldRenderer {
         }
     }
 
-    /** Checks whether an object can be drawn. */
+    /**
+     * Checks whether an object can be drawn.
+     * @param {DrawableObject} mo - The object to test.
+     * @returns {boolean} True when the object image is ready.
+     */
     canDrawObject(mo) {
         return Boolean(mo?.img?.complete && mo.img.naturalWidth !== 0);
     }
 
-    /** Draws one object mirrored horizontally. */
+    /**
+     * Draws one object mirrored horizontally.
+     * @param {DrawableObject} mo - The object to draw flipped.
+     */
     drawFlippedObject(mo) {
         const ctx = this.world.ctx;
         ctx.save();
@@ -92,27 +123,6 @@ class WorldRenderer {
         ctx.scale(-1, 1);
         ctx.drawImage(mo.img, 0, mo.y, mo.width, mo.height);
         ctx.restore();
-    }
-
-    /** Draws the bottle Pepe is carrying. */
-    drawCarriedBottle() {
-        const world = this.world;
-        if (!this.shouldDrawCarriedBottle()) {
-            return;
-        }
-        world.ctx.drawImage(world.carriedBottleImage, this.getCarriedBottleX(), world.character.y + 162, 42, 40);
-    }
-
-    /** Checks whether the carried bottle should be drawn. */
-    shouldDrawCarriedBottle() {
-        const world = this.world;
-        return Boolean(world.character && world.bottleCount >= 1 && world.carriedBottleImage.complete);
-    }
-
-    /** Calculates the carried bottle x position. */
-    getCarriedBottleX() {
-        const character = this.world.character;
-        return character.otherDirection ? character.x + character.width - 66 : character.x + 16;
     }
 
     /** Draws the boss fight text overlay. */
@@ -124,7 +134,10 @@ class WorldRenderer {
         this.drawBossFightTextWithOpacity(Math.min(1, timeLeft / 500));
     }
 
-    /** Draws the boss fight text with opacity. */
+    /**
+     * Draws the boss fight text with opacity.
+     * @param {number} opacity - The text opacity from 0 to 1.
+     */
     drawBossFightTextWithOpacity(opacity) {
         const world = this.world;
         world.ctx.save();
@@ -134,7 +147,10 @@ class WorldRenderer {
         world.ctx.restore();
     }
 
-    /** Applies boss fight text styles. */
+    /**
+     * Applies boss fight text styles.
+     * @param {number} opacity - The text opacity from 0 to 1.
+     */
     applyBossTextStyle(opacity) {
         const ctx = this.world.ctx;
         ctx.globalAlpha = opacity;
@@ -159,7 +175,10 @@ class WorldRenderer {
         world.ctx.restore();
     }
 
-    /** Checks whether the win image should be visible. */
+    /**
+     * Checks whether the win image should be visible.
+     * @returns {boolean} True when the win image should be drawn.
+     */
     shouldDrawWinImage() {
         const world = this.world;
         return world.winTriggered && Date.now() >= world.winScreenVisibleAt &&

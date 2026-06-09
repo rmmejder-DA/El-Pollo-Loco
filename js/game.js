@@ -14,9 +14,9 @@ function init() {
  */
 function configureGlobalAudio() {
     pepeDeadSound.preload = "auto";
-    pepeDeadSound.volume = 0.75;
+    pepeDeadSound.volume = 0.45;
     gameSound.preload = "auto";
-    gameSound.volume = 0.35;
+    gameSound.volume = 0.1;
     gameSound.loop = true;
 }
 
@@ -46,9 +46,17 @@ function shouldSkipStateWatcher() {
  * Shows game over when Pepe is dead.
  */
 function checkCharacterGameOver() {
-    if (!gameOverShown && !winShown && world.character.isDead()) {
+    if (!gameOverShown && !winShown && isCharacterDefeated()) {
         showGameOverScreen();
     }
+}
+
+/**
+ * Checks whether Pepe is defeated (dead or empty health bar).
+ * @returns {boolean} True when Pepe should be game over.
+ */
+function isCharacterDefeated() {
+    return world.character.isDead() || world.character.energy < 20;
 }
 
 /**

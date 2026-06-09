@@ -91,11 +91,11 @@ function showGameOverScreen() {
     }
 
     gameOverShown = true;
-    setGamePaused(false);
     stopGameSound();
     playPepeDeadSound();
     showElementById("gameOverScreen");
     setMobileControlsVisible(false);
+    setTimeout(() => setGamePaused(true), 600);
 }
 
 /**

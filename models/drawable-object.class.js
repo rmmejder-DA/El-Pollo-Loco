@@ -12,18 +12,27 @@ class DrawableObject {
         left: 0
     };
 
-    /** Loads a single image. */
+    /**
+     * Loads a single image into the object.
+     * @param {string} path - The image source path.
+     */
     loadImage = (path) => {
         this.img = new Image();
-        this.img.src = path;//
+        this.img.src = path;
     }
-// über try und catch könnte man den Fehler abfangen, wenn das Bild nicht geladen werden kann
-    /** Draws the object image. */
+
+    /**
+     * Draws the object image.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.
+     */
     draw(ctx) {
         ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     }
 
-    /** Returns the collision box with offsets applied. */
+    /**
+     * Returns the collision box with offsets applied.
+     * @returns {{x: number, y: number, width: number, height: number}} The collision box.
+     */
     getCollisionBox() {
         return {
             x: this.x + this.offset.left,
@@ -34,11 +43,11 @@ class DrawableObject {
     }
 
     /**
- * 
- * @param {Array} arr - ["path1.png", "path2.png", ...]
- */
+     * Loads and caches multiple images.
+     * @param {string[]} arr - Image source paths to cache.
+     */
     loadImages = (arr) => {
-        arr.forEach(path => {// Lädt jedes Bild und speichert es im Cache
+        arr.forEach(path => {
             let img = new Image();
             img.src = path;
             this.imageCache[path] = img;

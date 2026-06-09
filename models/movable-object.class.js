@@ -32,7 +32,11 @@ class MovableObject extends DrawableObject {
             this.speedY = 0;
         }
     }
-    /** Checks whether the object is above its ground. */
+
+    /**
+     * Checks whether the object is above its ground.
+     * @returns {boolean} True when the object is above ground.
+     */
     isAboveGround() {
         if (this instanceof ThrowableObject) {
             return true;
@@ -42,8 +46,10 @@ class MovableObject extends DrawableObject {
         }
     }
 
-
-    /** Draws the debug collision frame. */
+    /**
+     * Draws the debug collision frame.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.
+     */
     drawFrame(ctx) {
         if (this instanceof Charakter || this instanceof Chicken) {
             const box = this.getCollisionBox();
@@ -55,7 +61,11 @@ class MovableObject extends DrawableObject {
         }
     }
 
-    /** Checks collision against another object. */
+    /**
+     * Checks collision against another object.
+     * @param {MovableObject} mo - The other object to test.
+     * @returns {boolean} True when both objects overlap.
+     */
     isColliding(mo) {
         const ownBox = this.getCollisionBox();
         const otherBox = mo.getCollisionBox();
@@ -68,13 +78,16 @@ class MovableObject extends DrawableObject {
         );
     }
 
-    /** Applies damage to the object. */
-    hit() {
+    /**
+     * Applies damage to the object.
+     * @param {number} [damage=5] - The damage amount to apply.
+     */
+    hit(damage = 5) {
         if (this.isDead() || this.isHurt()) {
             return;
         }
 
-        this.energy -= 5;
+        this.energy -= damage;
         if (this.energy < 0) {
             this.energy = 0;
         }
@@ -82,25 +95,35 @@ class MovableObject extends DrawableObject {
         this.lastHit = new Date().getTime();
     }
 
-    /** Checks whether the object has no energy. */
+    /**
+     * Checks whether the object has no energy.
+     * @returns {boolean} True when the object energy is zero.
+     */
     isDead() {
         return this.energy == 0;
     }
 
-    /** Checks whether the object was hit recently. */
+    /**
+     * Checks whether the object was hit recently.
+     * @returns {boolean} True when hit within the last second.
+     */
     isHurt() {
-        let timePassed = new Date().getTime() - this.lastHit;// Zeit seit letztem Treffer
-        timePassed = timePassed / 1000;// in Sekunden
-        return timePassed < 1;// Ist die Figur in den letzten 1 Sekunden getroffen worden?
+        let timePassed = new Date().getTime() - this.lastHit;
+        timePassed = timePassed / 1000;
+        return timePassed < 1;
     }
-    /** Plays the next image from an animation. */
+
+    /**
+     * Plays the next image from an animation.
+     * @param {string[]} images - The animation frame paths.
+     */
     playAnimation = (images) => {
-        let i = this.currentImageIndex % images.length;//% sorgt dafür, dass der Index immer im Bereich der Array-Länge bleibt
-        // i = 0, 1, 2, 3, 4, 5, 0, 1, ...
+        let i = this.currentImageIndex % images.length;
         let path = images[i];
         this.img = this.imageCache[path];
         this.currentImageIndex++;
     }
+
     /** Moves the object left. */
     moveLeft = () => {
         this.x -= this.speed;

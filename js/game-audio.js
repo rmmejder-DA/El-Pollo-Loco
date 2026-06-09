@@ -21,8 +21,8 @@ function setGamePaused(isPaused) {
     if (gamePaused === isPaused) {
         return;
     }
-
     gamePaused = isPaused;
+    saveStoredBoolean(STORAGE_KEY_GAME_PAUSED, gamePaused);
     updatePauseAudio(isPaused);
 }
 
@@ -88,6 +88,7 @@ function applyMuteState() {
  */
 function toggleGameMute() {
     gameMuted = !gameMuted;
+    saveStoredBoolean(STORAGE_KEY_GAME_MUTED, gameMuted);
     applyMuteState();
 }
 

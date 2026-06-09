@@ -11,12 +11,12 @@ class World extends DrawableObject {
     endbossStatusBar;
     showEndbossStatusBar = false;
     bossPhaseStarted = false;
+    nextFleeChickenSpawnAt = 0;
     coinCount = 0;
     bottleCount = 0;
     maxCoins = 1;
-    maxBottles = 1;
+    maxBottles = 5;
     throwableObjects = [];
-    carriedBottleImage = new Image();
     coinCollectSound = new Audio("audio/coins.mp3");
     addBottleSound = new Audio("audio/addBottle.mp3");
     chickenBossSound = new Audio("audio/chickenBoss.mp3");
@@ -27,11 +27,17 @@ class World extends DrawableObject {
     winTriggered = false;
     winScreenVisibleAt = 0;
     winImage = new Image();
+    heartHintImage = new Image();
+    healthHintUntil = 0;
     collisionHandler;
     canvasControls;
     renderer;
 
-    /** Creates a game world for the canvas. */
+    /**
+     * Creates a game world for the canvas.
+     * @param {HTMLCanvasElement} canvas - The game canvas.
+     * @param {Keyboard} keyboard - The keyboard input state.
+     */
     constructor(canvas, keyboard) {
         super();
         this.setupCanvas(canvas, keyboard);
@@ -45,7 +51,11 @@ class World extends DrawableObject {
         this.run();
     }
 
-    /** Stores canvas and keyboard references. */
+    /**
+     * Stores canvas and keyboard references.
+     * @param {HTMLCanvasElement} canvas - The game canvas.
+     * @param {Keyboard} keyboard - The keyboard input state.
+     */
     setupCanvas(canvas, keyboard) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
@@ -54,8 +64,8 @@ class World extends DrawableObject {
 
     /** Sets static image sources used by the world. */
     setupImages() {
-        this.carriedBottleImage.src = "img/7_statusbars/3_icons/icon_salsa_bottle.png";
         this.winImage.src = "img/You won, you lost/You Win A.png";
+        this.heartHintImage.src = "img/7_statusbars/3_icons/icon_health.png";
     }
 
     /** Creates helper classes for world behavior. */
@@ -97,8 +107,8 @@ class World extends DrawableObject {
         this.endbossBottleHits = 0;
         this.winTriggered = false;
         this.winScreenVisibleAt = 0;
-        this.maxCoins = Math.max(1, this.level?.coins?.length || 1);
-        this.maxBottles = Math.max(1, this.level?.bottles?.length || 1);
+        this.maxCoins = 3;
+        this.maxBottles = 5;
         this.updateCollectibleStatusBars();
     }
 
@@ -109,12 +119,22 @@ class World extends DrawableObject {
         this.bottleStatusBar.setPercentage(this.getBottlePercentage());
     }
 
+    /** Converts a full coin bar into extra health for Pepe. */
+    convertCoinsToHealth() {
+        if (this.character.energy >= 100) {
+            this.coinCount = 0;
+            return;
+        }
+        this.character.energy = Math.min(100, this.character.energy + 20);
+        this.statusBar.setPercentage(this.character.energy);
+        this.coinCount = 0;
+        this.healthHintUntil = Date.now() + 1500;
+        this.playCollectibleSound(this.coinCollectSound);
+    }
+
     /** Calculates the bottle status percentage. */
     getBottlePercentage() {
-        if (this.bottleCount <= 0) {
-            return 0;
-        }
-        return Math.max(20, Math.min(100, (this.bottleCount / this.maxBottles) * 100));
+        return Math.min(100, (this.bottleCount / this.maxBottles) * 100);
     }
 
     /** Starts world update loops. */
@@ -129,6 +149,7 @@ class World extends DrawableObject {
             return;
         }
         this.handleBossPhase();
+        this.handleFleeingChickens();
         this.collisionHandler.checkCollisions();
         this.collisionHandler.checkCollectibleCollisions();
         this.collisionHandler.checkBottleCollisions();
@@ -153,6 +174,7 @@ class World extends DrawableObject {
         }
         this.throwBottleFromCharacter();
         this.bottleCount--;
+        this.keyboard.D = false;
         this.updateCollectibleStatusBars();
     }
 
@@ -170,7 +192,15 @@ class World extends DrawableObject {
             : this.character.x + this.character.width - 68;
     }
 
-    /** Plays a collectible or collision sound. */
+    /** Checks whether another bottle can be collected. */
+    canCollectBottle() {
+        return this.bottleCount < this.maxBottles;
+    }
+
+    /**
+     * Plays a collectible or collision sound.
+     * @param {HTMLAudioElement} sound - The sound to play.
+     */
     playCollectibleSound(sound) {
         if (!sound) {
             return;
@@ -180,7 +210,10 @@ class World extends DrawableObject {
         sound.play().catch(() => { });
     }
 
-    /** Applies mute state to world audio. */
+    /**
+     * Applies mute state to world audio.
+     * @param {boolean} isMuted - Whether audio should be muted.
+     */
     setMuted(isMuted) {
         this.getWorldSounds().forEach((sound) => sound.muted = isMuted);
         this.character?.setMuted?.(isMuted);
@@ -196,23 +229,34 @@ class World extends DrawableObject {
         setTimeout(() => showWinScreen?.(), 700);
     }
 
-    /** Spawns bottle pickups near the boss. */
+    /**
+     * Spawns bottle pickups near the boss.
+     * @param {number} amount - The number of bottles to spawn.
+     */
     spawnBossBottleDrops(amount) {
         const endboss = this.getEndboss();
         if (!this.canSpawnBossBottles(endboss, amount)) {
             return;
         }
         this.addBossBottleDrops(endboss, amount);
-        this.maxBottles += amount;
         this.updateCollectibleStatusBars();
     }
 
-    /** Checks whether boss bottles can spawn. */
+    /**
+     * Checks whether boss bottles can spawn.
+     * @param {Endboss} endboss - The endboss instance.
+     * @param {number} amount - The number of bottles to spawn.
+     * @returns {boolean} True when boss bottles can spawn.
+     */
     canSpawnBossBottles(endboss, amount) {
         return Boolean(endboss && this.character && amount > 0);
     }
 
-    /** Adds boss bottle drops to the level. */
+    /**
+     * Adds boss bottle drops to the level.
+     * @param {Endboss} endboss - The endboss instance.
+     * @param {number} amount - The number of bottles to add.
+     */
     addBossBottleDrops(endboss, amount) {
         const direction = this.character.x < endboss.x ? -1 : 1;
         const startX = this.getBossBottleStartX(endboss, direction);
@@ -221,7 +265,12 @@ class World extends DrawableObject {
         }
     }
 
-    /** Calculates the first boss bottle drop x position. */
+    /**
+     * Calculates the first boss bottle drop x position.
+     * @param {Endboss} endboss - The endboss instance.
+     * @param {number} direction - The drop direction (-1 or 1).
+     * @returns {number} The first bottle x position.
+     */
     getBossBottleStartX(endboss, direction) {
         return direction < 0 ? endboss.x - 80 : endboss.x + endboss.width + 30;
     }
@@ -229,6 +278,11 @@ class World extends DrawableObject {
     /** Wires world references into actors. */
     setWorld() {
         this.character.world = this;
+        this.level.enemies?.forEach((enemy) => {
+            if (typeof enemy.setWorld === "function") {
+                enemy.setWorld(this);
+            }
+        });
         const endboss = this.getEndboss();
         if (endboss) {
             endboss.world = this;
@@ -247,7 +301,11 @@ class World extends DrawableObject {
         endboss.startFight?.();
     }
 
-    /** Checks whether the boss phase should start. */
+    /**
+     * Checks whether the boss phase should start.
+     * @param {Endboss} endboss - The endboss instance.
+     * @returns {boolean} True when the boss phase should start.
+     */
     shouldStartBossPhase(endboss) {
         return Boolean(endboss && !this.bossPhaseStarted && this.character.x >= endboss.x - 500);
     }
@@ -257,7 +315,45 @@ class World extends DrawableObject {
         this.level.enemies = (this.level.enemies || []).filter((enemy) => !(enemy instanceof Chicken));
     }
 
-    /** Shows boss UI and plays the boss sound. */
+    /** Spawns chasing chickens when Pepe flees from the boss. */
+    handleFleeingChickens() {
+        const endboss = this.getEndboss();
+        if (!this.bossPhaseStarted || !endboss || endboss.isDead()) {
+            return;
+        }
+        if (!this.isCharacterFleeingBoss(endboss) || Date.now() < this.nextFleeChickenSpawnAt) {
+            return;
+        }
+        this.spawnChasingChicken(this.character.x + 720);
+        this.spawnChasingChicken(this.character.x - 720);
+        this.nextFleeChickenSpawnAt = Date.now() + 2500;
+    }
+
+    /**
+     * Checks whether Pepe runs away from the boss.
+     * @param {Endboss} endboss - The endboss instance.
+     * @returns {boolean} True when Pepe flees from the boss.
+     */
+    isCharacterFleeingBoss(endboss) {
+        return this.character.x < endboss.x - 600;
+    }
+
+    /**
+     * Spawns a single chicken that chases Pepe.
+     * @param {number} spawnX - The chicken spawn x position.
+     */
+    spawnChasingChicken(spawnX) {
+        const startX = Math.max(0, spawnX);
+        const chicken = new Chicken(startX);
+        chicken.chasePepe = true;
+        chicken.setWorld?.(this);
+        this.level.enemies.push(chicken);
+    }
+
+    /**
+     * Shows boss UI and plays the boss sound.
+     * @param {Endboss} endboss - The endboss instance.
+     */
     activateBossUi(endboss) {
         this.showEndbossStatusBar = true;
         this.endbossStatusBar.setPercentage(endboss.energy);
@@ -266,7 +362,10 @@ class World extends DrawableObject {
         this.playCollectibleSound(this.chickenBossSound);
     }
 
-    /** Configures the boss fight movement bounds. */
+    /**
+     * Configures the boss fight movement bounds.
+     * @param {Endboss} endboss - The endboss instance.
+     */
     configureBossFight(endboss) {
         const minX = Math.max(1200, endboss.x - 650);
         const maxX = Math.min(this.level.level_end_x - endboss.width + 20, endboss.x + 1200);
@@ -278,7 +377,11 @@ class World extends DrawableObject {
         return this.findEndboss(this.level.clouds) || this.findEndboss(this.level.enemies);
     }
 
-    /** Finds an endboss inside a collection. */
+    /**
+     * Finds an endboss inside a collection.
+     * @param {object[]} [objects=[]] - The objects to search.
+     * @returns {Endboss|undefined} The found endboss or undefined.
+     */
     findEndboss(objects = []) {
         return objects.find((object) => object instanceof Endboss);
     }
@@ -298,7 +401,12 @@ class World extends DrawableObject {
         return (this.level?.level_end_x ?? 0) - (this.character?.width || 0);
     }
 
-    /** Calculates the pre-boss gate x limit. */
+    /**
+     * Calculates the pre-boss gate x limit.
+     * @param {number} levelMaxX - The level end limit.
+     * @param {Endboss} endboss - The endboss instance.
+     * @returns {number} The gate x limit before the boss.
+     */
     getBossGateMaxX(levelMaxX, endboss) {
         const bossGateX = endboss.x - this.character.width + 40;
         return Math.max(0, Math.min(levelMaxX, bossGateX));

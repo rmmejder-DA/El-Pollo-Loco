@@ -2,7 +2,10 @@ class WorldCanvasControls {
     mobileJumpImage = new Image();
     mobileThrowImage = new Image();
 
-    /** Creates canvas control rendering helpers. */
+    /**
+     * Creates canvas control rendering helpers.
+     * @param {World} world - The world to render controls for.
+     */
     constructor(world) {
         this.world = world;
         this.mobileJumpImage.src = "icon/jump.png";
@@ -22,7 +25,10 @@ class WorldCanvasControls {
         getCanvasMobileControlButtons(this.world.canvas).forEach((button) => this.drawMobileCanvasButton(button));
     }
 
-    /** Draws one mobile canvas button. */
+    /**
+     * Draws one mobile canvas button.
+     * @param {object} button - The button layout descriptor.
+     */
     drawMobileCanvasButton(button) {
         const centerX = button.x + button.size / 2;
         const centerY = button.y + button.size / 2;
@@ -36,7 +42,13 @@ class WorldCanvasControls {
         }
     }
 
-    /** Draws a round canvas button background. */
+    /**
+     * Draws a round canvas button background.
+     * @param {number} centerX - The button center x position.
+     * @param {number} centerY - The button center y position.
+     * @param {number} size - The button size in pixels.
+     * @param {number} [alpha=0.9] - The fill opacity.
+     */
     drawRoundButton(centerX, centerY, size, alpha = 0.9) {
         const ctx = this.world.ctx;
         ctx.save();
@@ -51,7 +63,12 @@ class WorldCanvasControls {
         ctx.restore();
     }
 
-    /** Draws the label of a mobile canvas button. */
+    /**
+     * Draws the label of a mobile canvas button.
+     * @param {object} button - The button layout descriptor.
+     * @param {number} centerX - The button center x position.
+     * @param {number} centerY - The button center y position.
+     */
     drawMobileCanvasButtonLabel(button, centerX, centerY) {
         const ctx = this.world.ctx;
         ctx.save();
@@ -63,7 +80,10 @@ class WorldCanvasControls {
         ctx.restore();
     }
 
-    /** Draws an icon inside a mobile canvas button. */
+    /**
+     * Draws an icon inside a mobile canvas button.
+     * @param {object} button - The button layout descriptor.
+     */
     drawMobileCanvasButtonImage(button) {
         const image = button.image === "jump" ? this.mobileJumpImage : this.mobileThrowImage;
         if (!image.complete || image.naturalWidth === 0) {
@@ -73,7 +93,11 @@ class WorldCanvasControls {
         this.drawPreparedButtonImage(button, image);
     }
 
-    /** Draws a prepared button image with rotation and filter. */
+    /**
+     * Draws a prepared button image with rotation and filter.
+     * @param {object} button - The button layout descriptor.
+     * @param {HTMLImageElement} image - The icon image to draw.
+     */
     drawPreparedButtonImage(button, image) {
         const icon = this.getButtonIconMetrics(button);
         const ctx = this.world.ctx;
@@ -85,7 +109,11 @@ class WorldCanvasControls {
         ctx.restore();
     }
 
-    /** Calculates button icon metrics. */
+    /**
+     * Calculates button icon metrics.
+     * @param {object} button - The button layout descriptor.
+     * @returns {{size: number, x: number, y: number}} The icon metrics.
+     */
     getButtonIconMetrics(button) {
         const size = button.image === "jump" ? 32 : 42;
         return { size, x: button.x + (button.size - size) / 2, y: button.y + (button.size - size) / 2 };
@@ -104,7 +132,10 @@ class WorldCanvasControls {
         getCanvasHudButtons(this.world.canvas).forEach((button) => this.drawCanvasHudButton(button));
     }
 
-    /** Draws one HUD button. */
+    /**
+     * Draws one HUD button.
+     * @param {object} button - The button layout descriptor.
+     */
     drawCanvasHudButton(button) {
         const centerX = button.x + button.size / 2;
         const centerY = button.y + button.size / 2;
@@ -118,7 +149,12 @@ class WorldCanvasControls {
         }
     }
 
-    /** Draws the pause or play icon. */
+    /**
+     * Draws the pause or play icon.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawPauseIcon(centerX, centerY, size) {
         const ctx = this.world.ctx;
         ctx.save();
@@ -132,7 +168,12 @@ class WorldCanvasControls {
         ctx.restore();
     }
 
-    /** Draws the play triangle icon. */
+    /**
+     * Draws the play triangle icon.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawPlayTriangle(centerX, centerY, size) {
         const ctx = this.world.ctx;
         ctx.beginPath();
@@ -143,7 +184,12 @@ class WorldCanvasControls {
         ctx.fill();
     }
 
-    /** Draws pause bars. */
+    /**
+     * Draws pause bars.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawPauseBars(centerX, centerY, size) {
         const ctx = this.world.ctx;
         const barWidth = size * 0.11;
@@ -152,7 +198,12 @@ class WorldCanvasControls {
         ctx.fillRect(centerX + size * 0.05, centerY - barHeight / 2, barWidth, barHeight);
     }
 
-    /** Draws the mute or volume icon. */
+    /**
+     * Draws the mute or volume icon.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawMuteIcon(centerX, centerY, size) {
         const iconCenterX = centerX - size * 0.08;
         const ctx = this.world.ctx;
@@ -162,7 +213,12 @@ class WorldCanvasControls {
         ctx.restore();
     }
 
-    /** Draws either muted or volume state. */
+    /**
+     * Draws either muted or volume state.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawMuteState(centerX, centerY, size) {
         if (typeof isGameMuted === "function" && isGameMuted()) {
             this.drawMuteCross(centerX, centerY, size);
@@ -171,7 +227,12 @@ class WorldCanvasControls {
         }
     }
 
-    /** Draws the volume wave. */
+    /**
+     * Draws the volume wave.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawVolumeWave(centerX, centerY, size) {
         const ctx = this.world.ctx;
         ctx.beginPath();
@@ -179,7 +240,10 @@ class WorldCanvasControls {
         ctx.stroke();
     }
 
-    /** Prepares the drawing context for the mute icon. */
+    /**
+     * Prepares the drawing context for the mute icon.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.
+     */
     prepareMuteIconContext(ctx) {
         ctx.save();
         ctx.fillStyle = "#ffcc00";
@@ -188,7 +252,12 @@ class WorldCanvasControls {
         ctx.lineCap = "round";
     }
 
-    /** Draws the speaker body icon. */
+    /**
+     * Draws the speaker body icon.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawSpeakerBody(centerX, centerY, size) {
         const ctx = this.world.ctx;
         ctx.beginPath();
@@ -202,7 +271,12 @@ class WorldCanvasControls {
         ctx.fill();
     }
 
-    /** Draws the muted cross icon. */
+    /**
+     * Draws the muted cross icon.
+     * @param {number} centerX - The icon center x position.
+     * @param {number} centerY - The icon center y position.
+     * @param {number} size - The icon size in pixels.
+     */
     drawMuteCross(centerX, centerY, size) {
         const ctx = this.world.ctx;
         ctx.beginPath();

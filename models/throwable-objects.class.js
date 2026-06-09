@@ -11,7 +11,12 @@ class ThrowableObject extends MovableObject {
         "img/6_salsa_bottle/bottle_rotation/4_bottle_rotation.png"
     ];
 
-    /** Creates a thrown bottle. */
+    /**
+     * Creates a thrown bottle.
+     * @param {number} x - The start x position.
+     * @param {number} y - The start y position.
+     * @param {number} [direction=1] - The throw direction (-1 or 1).
+     */
     constructor(x, y, direction = 1) {
         super().loadImage(this.IMAGES_ROTATION[0]);
         this.loadImages(this.IMAGES_ROTATION);
@@ -21,7 +26,12 @@ class ThrowableObject extends MovableObject {
         this.animate();
     }
 
-    /** Sets the thrown bottle position and size. */
+    /**
+     * Sets the thrown bottle position and size.
+     * @param {number} x - The start x position.
+     * @param {number} y - The start y position.
+     * @param {number} direction - The throw direction (-1 or 1).
+     */
     setupThrowPosition(x, y, direction) {
         this.x = x;
         this.y = y;

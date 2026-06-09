@@ -13,6 +13,7 @@ class Charakter extends MovableObject {
         bottom: 10,
         left: 35
     };
+
     IMAGES_HURT = [
         "img/2_character_pepe/4_hurt/H-41.png",
         "img/2_character_pepe/4_hurt/H-42.png",
@@ -83,14 +84,20 @@ class Charakter extends MovableObject {
     idleStartedAt = null;
     longIdleDelay = 5000;
 
-    /** Returns Pepe's maximum x position. */
+    /**
+     * Returns Pepe's maximum x position.
+     * @returns {number} The maximum x position for Pepe.
+     */
     getMaxX() {
         return typeof this.world.getCharacterMaxX === "function"
             ? this.world.getCharacterMaxX()
             : this.world.level.level_end_x;
     }
 
-    /** Checks whether Pepe is moving horizontally. */
+    /**
+     * Checks whether Pepe is moving horizontally.
+     * @returns {boolean} True when Pepe moves left or right.
+     */
     isMoving() {
         if (!this.world || !this.world.keyboard) {
             return false;
@@ -102,12 +109,18 @@ class Charakter extends MovableObject {
         return isMovingRight || isMovingLeft;
     }
 
-    /** Checks whether Pepe is throwing a bottle. */
+    /**
+     * Checks whether Pepe is throwing a bottle.
+     * @returns {boolean} True when the throw key is pressed.
+     */
     isThrowingBottle() {
         return this.world && this.world.keyboard && this.world.keyboard.D;
     }
 
-    /** Plays a character animation sequence. */
+    /**
+     * Plays a character animation sequence.
+     * @param {string[]} images - The animation frame paths.
+     */
     playCharacterAnimation(images) {
         if (this.activeAnimation !== images) {
             this.currentImageIndex = 0;
@@ -122,7 +135,10 @@ class Charakter extends MovableObject {
         this.idleStartedAt = null;
     }
 
-    /** Returns the correct idle animation. */
+    /**
+     * Returns the correct idle animation.
+     * @returns {string[]} The idle or long idle animation frames.
+     */
     getIdleAnimation() {
         if (!this.idleStartedAt) {
             this.idleStartedAt = Date.now();
@@ -167,7 +183,10 @@ class Charakter extends MovableObject {
         this.walking_sound.volume = this.walkingVolume;
     }
 
-    /** Applies mute state to Pepe's sounds. */
+    /**
+     * Applies mute state to Pepe's sounds.
+     * @param {boolean} isMuted - Whether audio should be muted.
+     */
     setMuted(isMuted) {
         this.walking_sound.muted = isMuted;
         this.jump_sound.muted = isMuted;
@@ -214,16 +233,20 @@ class Charakter extends MovableObject {
     /** Updates Pepe's visible animation state. */
     updateCharacterAnimation() {
         if (typeof isGamePaused === "function" && isGamePaused()) {
-            return;}
+            return;
+        }
         if (this.isDead()) {
             this.playDeathStateAnimation();
-            return;}
+            return;
+        }
         if (this.isHurt()) {
             this.playHurtStateAnimation();
-            return;}
+            return;
+        }
         if (this.isAboveGround()) {
             this.playAirStateAnimation();
-            return;}
+            return;
+        }
         this.playGroundStateAnimation();
     }
 
@@ -250,20 +273,37 @@ class Charakter extends MovableObject {
     playAirStateAnimation() {
         this.resetIdleTimer();
         this.deathAnimationStarted = false;
-        this.playCharacterAnimation(this.IMAGES_JUMPING);
+        this.playJumpAnimationOnce();
+    }
+
+    /** Plays the jump animation once without looping. */
+    playJumpAnimationOnce() {
+        if (this.activeAnimation !== this.IMAGES_JUMPING) {
+            this.currentImageIndex = 0;
+            this.activeAnimation = this.IMAGES_JUMPING;
+        }
+        const lastIndex = this.IMAGES_JUMPING.length - 1;
+        const index = Math.min(this.currentImageIndex, lastIndex);
+        this.img = this.imageCache[this.IMAGES_JUMPING[index]];
+        if (this.currentImageIndex < lastIndex) {
+            this.currentImageIndex++;
+        }
     }
 
     /** Plays the grounded animation state. */
     playGroundStateAnimation() {
         this.deathAnimationStarted = false;
         if (!this.world || !this.world.keyboard) {
-            return;}
+            return;
+        }
         if (this.isMoving()) {
             this.playMovingAnimation();
-            return;}
+            return;
+        }
         if (this.isThrowingBottle()) {
             this.playThrowingAnimation();
-            return;}
+            return;
+        }
         this.playCharacterAnimation(this.getIdleAnimation());
     }
 
@@ -297,7 +337,10 @@ class Charakter extends MovableObject {
         this.updateCameraPosition();
     }
 
-    /** Checks whether movement should be skipped. */
+    /**
+     * Checks whether movement should be skipped.
+     * @returns {boolean} True when the movement frame is skipped.
+     */
     shouldSkipMovementFrame() {
         if (typeof isGamePaused === "function" && isGamePaused()) {
             this.stopWalkingSound();
@@ -306,7 +349,10 @@ class Charakter extends MovableObject {
         return !this.world || !this.world.keyboard || this.handleDeadMovementState();
     }
 
-    /** Handles dead movement state. */
+    /**
+     * Handles dead movement state.
+     * @returns {boolean} True when Pepe is dead.
+     */
     handleDeadMovementState() {
         if (!this.isDead()) {
             return false;
@@ -328,7 +374,10 @@ class Charakter extends MovableObject {
         }
     }
 
-    /** Updates horizontal movement and facing direction. */
+    /**
+     * Updates horizontal movement and facing direction.
+     * @param {number} maxX - The maximum x position for Pepe.
+     */
     updateHorizontalMovement(maxX) {
         if (this.world.keyboard.right && this.x < maxX) {
             this.moveRight();

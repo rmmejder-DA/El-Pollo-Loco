@@ -2,7 +2,7 @@ let level1;
 
 /** Initializes the first level. */
 function initLevel1() {
-    const backgroundObjects = createBackgroundObjects();
+    const backgroundObjects = BackgroundObject.createLevelBackground();
     const levelEndX = getLevelEndX(backgroundObjects);
     level1 = new Level(
         createChickens(),
@@ -22,8 +22,8 @@ function createChickens() {
 
 /** Creates collectible coins. */
 function createCoins() {
-    return Array.from({ length: 18 }, (_, index) => {
-        const x = 300 + index * 180 + Math.random() * 100;
+    return Array.from({ length: 12 }, (_, index) => {
+        const x = 300 + index * 230 + Math.random() * 120;
         const y = 180 + Math.random() * 110;
         return new Coin(x, y);
     });
@@ -38,34 +38,20 @@ function createBottles() {
     });
 }
 
-/** Creates all background layer objects. */
-function createBackgroundObjects() {
-    return [
-        ...createBackgroundSegment(-720, 2),
-        ...createBackgroundSegment(0, 1),
-        ...createBackgroundSegment(720, 2),
-        ...createBackgroundSegment(720 * 2, 1),
-        ...createBackgroundSegment(720 * 3, 2)
-    ];
-}
-
-/** Creates one background segment. */
-function createBackgroundSegment(x, variant) {
-    return [
-        new BackgroundObject("img/5_background/layers/4_clouds/1.png", x),
-        new BackgroundObject("img/5_background/layers/air.png", x),
-        new BackgroundObject(`img/5_background/layers/3_third_layer/${variant}.png`, x),
-        new BackgroundObject(`img/5_background/layers/2_second_layer/${variant}.png`, x),
-        new BackgroundObject(`img/5_background/layers/1_first_layer/${variant}.png`, x)
-    ];
-}
-
-/** Calculates the level end position. */
+/**
+ * Calculates the level end position.
+ * @param {BackgroundObject[]} backgroundObjects - The background layers.
+ * @returns {number} The far right level edge.
+ */
 function getLevelEndX(backgroundObjects) {
     return Math.max(...backgroundObjects.map((object) => object.x + object.width));
 }
 
-/** Creates moving clouds for the level. */
+/**
+ * Creates moving clouds for the level.
+ * @param {number} levelEndX - The level end x for cloud wrapping.
+ * @returns {Cloud[]} The created clouds.
+ */
 function createClouds(levelEndX) {
     return Array.from({ length: 8 }, (_, index) => {
         const x = -500 + index * 560 + Math.random() * 160;

@@ -1,24 +1,37 @@
 class WorldStatusFactory {
-    /** Creates the coin status bar. */
+    /**
+     * Creates the coin status bar.
+     * @returns {StatusBar} The coin status bar.
+     */
     static createCoinStatusBar() {
         const bar = new StatusBar(this.getCoinBarImages(), 20, 70);
         bar.setPercentage(0);
         return bar;
     }
 
-    /** Creates the bottle status bar. */
+    /**
+     * Creates the bottle status bar.
+     * @returns {StatusBar} The bottle status bar.
+     */
     static createBottleStatusBar() {
         const bar = new StatusBar(this.getBottleBarImages(), 20, 120);
         bar.setPercentage(0);
         return bar;
     }
 
-    /** Creates the endboss status bar. */
+    /**
+     * Creates the endboss status bar.
+     * @param {HTMLCanvasElement} canvas - The game canvas.
+     * @returns {StatusBar} The endboss status bar.
+     */
     static createEndbossStatusBar(canvas) {
         return new StatusBar(this.getEndbossBarImages(), canvas.width - 220, 20);
     }
 
-    /** Returns coin bar image paths. */
+    /**
+     * Returns coin bar image paths.
+     * @returns {string[]} The coin bar image paths.
+     */
     static getCoinBarImages() {
         return [
             "img/7_statusbars/1_statusbar/1_statusbar_coin/green/0.png",
@@ -30,7 +43,10 @@ class WorldStatusFactory {
         ];
     }
 
-    /** Returns bottle bar image paths. */
+    /**
+     * Returns bottle bar image paths.
+     * @returns {string[]} The bottle bar image paths.
+     */
     static getBottleBarImages() {
         return [
             "img/7_statusbars/1_statusbar/3_statusbar_bottle/green/0.png",
@@ -42,7 +58,10 @@ class WorldStatusFactory {
         ];
     }
 
-    /** Returns endboss bar image paths. */
+    /**
+     * Returns endboss bar image paths.
+     * @returns {string[]} The endboss bar image paths.
+     */
     static getEndbossBarImages() {
         return [
             "img/7_statusbars/2_statusbar_endboss/green/green0.png",

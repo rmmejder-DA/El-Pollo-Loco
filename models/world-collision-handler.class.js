@@ -1,5 +1,8 @@
 class WorldCollisionHandler {
-    /** Creates a collision handler for a world. */
+    /**
+     * Creates a collision handler for a world.
+     * @param {World} world - The world to handle collisions for.
+     */
     constructor(world) {
         this.world = world;
     }
@@ -17,7 +20,11 @@ class WorldCollisionHandler {
         }
     }
 
-    /** Checks one enemy collision. */
+    /**
+     * Checks one enemy collision.
+     * @param {MovableObject} enemy - The enemy to test.
+     * @param {number} enemyIndex - The enemy index in the level.
+     */
     checkSingleEnemyCollision(enemy, enemyIndex) {
         if (!this.canEnemyCollide(enemy)) {
             return;
@@ -25,22 +32,52 @@ class WorldCollisionHandler {
         if (this.isEnemyStomped(enemy)) {
             this.defeatStompedEnemy(enemy, enemyIndex);
         } else {
-            this.damageCharacter();
+            this.blockCharacterAt(enemy);
+            this.damageCharacter(5);
         }
     }
 
-    /** Defeats a stomped enemy and bounces Pepe. */
+    /**
+     * Blocks Pepe so he cannot walk through an enemy.
+     * @param {MovableObject} enemy - The blocking enemy.
+     */
+    blockCharacterAt(enemy) {
+        const character = this.world.character;
+        const characterBox = character.getCollisionBox();
+        const enemyBox = enemy.getCollisionBox();
+        const characterCenter = characterBox.x + characterBox.width / 2;
+        const enemyCenter = enemyBox.x + enemyBox.width / 2;
+        if (characterCenter < enemyCenter) {
+            character.x = enemyBox.x - characterBox.width - (characterBox.x - character.x);
+        } else {
+            character.x = enemyBox.x + enemyBox.width - (characterBox.x - character.x);
+        }
+    }
+
+    /**
+     * Defeats a stomped enemy and bounces Pepe.
+     * @param {MovableObject} enemy - The stomped enemy.
+     * @param {number} enemyIndex - The enemy index in the level.
+     */
     defeatStompedEnemy(enemy, enemyIndex) {
         this.defeatEnemy(enemy, enemyIndex);
         this.world.character.speedY = 20;
     }
 
-    /** Checks whether one enemy can collide. */
+    /**
+     * Checks whether one enemy can collide.
+     * @param {MovableObject} enemy - The enemy to test.
+     * @returns {boolean} True when the enemy can collide.
+     */
     canEnemyCollide(enemy) {
         return enemy && !enemy.isDead && this.world.character.isColliding(enemy);
     }
 
-    /** Checks whether Pepe stomped an enemy. */
+    /**
+     * Checks whether Pepe stomped an enemy.
+     * @param {MovableObject} enemy - The enemy to test.
+     * @returns {boolean} True when Pepe stomped the enemy.
+     */
     isEnemyStomped(enemy) {
         const character = this.world.character;
         const characterBottom = character.y + character.height;
@@ -49,7 +86,11 @@ class WorldCollisionHandler {
         return character.speedY < 0 && verticalHitDistance >= 0 && verticalHitDistance <= 40 && hitFromAbove;
     }
 
-    /** Defeats or removes an enemy. */
+    /**
+     * Defeats or removes an enemy.
+     * @param {MovableObject} enemy - The enemy to defeat.
+     * @param {number} enemyIndex - The enemy index in the level.
+     */
     defeatEnemy(enemy, enemyIndex) {
         if (typeof enemy.die === "function") {
             enemy.die();
@@ -60,7 +101,10 @@ class WorldCollisionHandler {
         this.world.level.enemies.splice(enemyIndex, 1);
     }
 
-    /** Removes an enemy from the level. */
+    /**
+     * Removes an enemy from the level.
+     * @param {MovableObject} enemy - The enemy to remove.
+     */
     removeEnemy(enemy) {
         const enemyIndex = this.world.level.enemies.indexOf(enemy);
         if (enemyIndex > -1) {
@@ -68,10 +112,13 @@ class WorldCollisionHandler {
         }
     }
 
-    /** Applies damage to Pepe. */
-    damageCharacter() {
+    /**
+     * Applies damage to Pepe.
+     * @param {number} [damage=20] - The damage amount to apply.
+     */
+    damageCharacter(damage = 20) {
         const previousEnergy = this.world.character.energy;
-        this.world.character.hit();
+        this.world.character.hit(damage);
 
         if (this.world.character.energy !== previousEnergy) {
             this.world.statusBar.setPercentage(this.world.character.energy);
@@ -86,8 +133,11 @@ class WorldCollisionHandler {
             ? endboss.canDamageCharacter()
             : true;
 
-        if (endboss && !endboss.isDead() && this.world.character.isColliding(endboss) && bossCanDamage) {
-            this.damageCharacter();
+        if (endboss && !endboss.isDead() && this.world.character.isColliding(endboss)) {
+            this.blockCharacterAt(endboss);
+            if (bossCanDamage) {
+                this.damageCharacter();
+            }
         }
     }
 
@@ -106,13 +156,20 @@ class WorldCollisionHandler {
             }
 
             this.world.level.coins.splice(i, 1);
-            this.world.coinCount = Math.min(this.world.maxCoins, this.world.coinCount + 1);
-            this.world.updateCollectibleStatusBars();
+            this.world.coinCount += 1;
             this.world.playCollectibleSound(this.world.coinCollectSound);
+            if (this.world.coinCount >= this.world.maxCoins) {
+                this.world.convertCoinsToHealth();
+            }
+            this.world.updateCollectibleStatusBars();
         }
     }
 
-    /** Checks whether Pepe collects a coin. */
+    /**
+     * Checks whether Pepe collects a coin.
+     * @param {DrawableObject} coin - The coin to test.
+     * @returns {boolean} True when Pepe collides with the coin.
+     */
     isCoinCollectingCollision(coin) {
         return this.world.character.isColliding(coin);
     }
@@ -124,9 +181,12 @@ class WorldCollisionHandler {
             if (!bottlePickup || !this.world.character.isColliding(bottlePickup)) {
                 continue;
             }
+            if (!this.world.canCollectBottle()) {
+                continue;
+            }
 
             this.world.level.bottles.splice(i, 1);
-            this.world.bottleCount = Math.min(this.world.maxBottles, this.world.bottleCount + 1);
+            this.world.bottleCount++;
             this.world.updateCollectibleStatusBars();
             this.world.playCollectibleSound(this.world.addBottleSound);
         }
@@ -146,7 +206,12 @@ class WorldCollisionHandler {
         }
     }
 
-    /** Checks one bottle against normal enemies. */
+    /**
+     * Checks one bottle against normal enemies.
+     * @param {ThrowableObject} bottle - The thrown bottle.
+     * @param {number} bottleIndex - The bottle index in the throwables.
+     * @returns {boolean} True when an enemy was hit.
+     */
     checkBottleEnemyHit(bottle, bottleIndex) {
         for (let enemyIndex = this.world.level.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
             const enemy = this.world.level.enemies[enemyIndex];
@@ -162,7 +227,12 @@ class WorldCollisionHandler {
         return false;
     }
 
-    /** Checks one thrown bottle against the endboss. */
+    /**
+     * Checks one thrown bottle against the endboss.
+     * @param {ThrowableObject} bottle - The thrown bottle.
+     * @param {number} bottleIndex - The bottle index in the throwables.
+     * @param {Endboss} endboss - The endboss to test.
+     */
     checkBottleEndbossHit(bottle, bottleIndex, endboss) {
         if (!endboss || endboss.isDead() || !bottle.isColliding(endboss)) {
             return;
@@ -176,13 +246,19 @@ class WorldCollisionHandler {
         this.handleEndbossHitResult(endboss);
     }
 
-    /** Updates the visible endboss status bar. */
+    /**
+     * Updates the visible endboss status bar.
+     * @param {Endboss} endboss - The endboss to read energy from.
+     */
     updateEndbossStatusBar(endboss) {
         this.world.showEndbossStatusBar = true;
         this.world.endbossStatusBar.setPercentage(endboss.energy);
     }
 
-    /** Handles the result after the endboss was hit. */
+    /**
+     * Handles the result after the endboss was hit.
+     * @param {Endboss} endboss - The endboss that was hit.
+     */
     handleEndbossHitResult(endboss) {
         if (endboss.isDead()) {
             this.world.triggerWinAfterBossDefeat();
