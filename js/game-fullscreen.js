@@ -1,7 +1,7 @@
 /*** Requests fullscreen on supported mobile start viewports.*/
 function requestFullscreenOnMobileStart() {
-    canvasMobileControlsActive = isStartFullscreenViewport();
-    if (canvasMobileControlsActive) {
+    canvasMobileControlsActive = isMobileViewport();
+    if (shouldAutoStartFullscreen()) {
         openFullscreen(document.getElementById("fullscreen"));
     }
 }

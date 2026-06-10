@@ -1,8 +1,9 @@
 class WorldCollisionHandler {
-    /**
-     * Creates a collision handler for a world.
-     * @param {World} world - The world to handle collisions for.
-     */
+    coinPickupDistance = 95;
+    endbossBottleDamage = 27.5;
+
+    /*** Creates a collision handler for a world.
+     * @param {World} world - The world to handle collisions for.*/
     constructor(world) {
         this.world = world;
     }
@@ -61,6 +62,7 @@ class WorldCollisionHandler {
     defeatStompedEnemy(enemy, enemyIndex) {
         this.defeatEnemy(enemy, enemyIndex);
         this.world.character.speedY = 20;
+        this.world.character.showStompJumpFrame?.();
     }
 
     /**
@@ -116,6 +118,9 @@ class WorldCollisionHandler {
      * @param {number} [damage=20] - The damage amount to apply.
      */
     damageCharacter(damage = 20) {
+        if (this.world.winTriggered) {
+            return;
+        }
         const previousEnergy = this.world.character.energy;
         this.world.character.hit(damage);
 
@@ -172,10 +177,30 @@ class WorldCollisionHandler {
     /**
      * Checks whether Pepe collects a coin.
      * @param {DrawableObject} coin - The coin to test.
-     * @returns {boolean} True when Pepe collides with the coin.
+     * @returns {boolean} True when Pepe jumps close enough to the coin.
      */
     isCoinCollectingCollision(coin) {
-        return this.world.character.isColliding(coin);
+        const character = this.world.character;
+        return character.isAboveGround() && this.isCoinInPickupRange(character, coin);
+    }
+
+    /**
+     * Checks whether a coin is close enough to Pepe to be collected.
+     * @param {MovableObject} character - Pepe.
+     * @param {DrawableObject} coin - The coin to test.
+     * @returns {boolean} True when coin distance is within the pickup range.
+     */
+    isCoinInPickupRange(character, coin) {
+        const characterBox = character.getCollisionBox();
+        const coinBox = coin.getCollisionBox();
+        const characterCenterX = characterBox.x + characterBox.width / 2;
+        const characterCenterY = characterBox.y + characterBox.height / 2;
+        const coinCenterX = coinBox.x + coinBox.width / 2;
+        const coinCenterY = coinBox.y + coinBox.height / 2;
+        const distanceX = characterCenterX - coinCenterX;
+        const distanceY = characterCenterY - coinCenterY;
+        const distance = Math.hypot(distanceX, distanceY);
+        return distance <= this.coinPickupDistance;
     }
 
     /** Checks bottle pickup collisions. */
@@ -243,7 +268,7 @@ class WorldCollisionHandler {
         }
 
         this.world.throwableObjects.splice(bottleIndex, 1);
-        endboss.hit();
+        endboss.hit(this.endbossBottleDamage);
         this.world.playCollectibleSound(this.world.chickenHitSound);
         this.world.endbossBottleHits += 1;
         this.updateEndbossStatusBar(endboss);

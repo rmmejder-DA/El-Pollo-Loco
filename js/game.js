@@ -5,6 +5,8 @@ function init() {
     initMobileControls();
     initCanvasMobileControls();
     initKeyboardInfo();
+    syncResponsiveControlMode();
+    window.addEventListener("resize", syncResponsiveControlMode);
 }
 
 /*** Configures shared audio defaults.*/
@@ -20,8 +22,7 @@ function configureGlobalAudio() {
 function startGameStateWatcher() {
     setInterval(() => {
         if (shouldSkipStateWatcher()) {return;}
-        checkCharacterGameOver();
-        checkEndbossWin();
+        resolveGameEndState();
     }, 100);
 }
 
@@ -31,10 +32,17 @@ function shouldSkipStateWatcher() {
     return !world || !world.character || gamePaused;
 }
 
-/*** Shows game over when Pepe is dead.*/
-function checkCharacterGameOver() {
-    if (!gameOverShown && !winShown && isCharacterDefeated()) {
+/** Resolves the boss-fight outcome so only one end state is shown. */
+function resolveGameEndState() {
+    if (gameOverShown || winShown) {
+        return;
+    }
+    if (isCharacterDefeated()) {
         showGameOverScreen();
+        return;
+    }
+    if (didCharacterWinBossFight()) {
+        showWinScreen();
     }
 }
 
@@ -44,12 +52,13 @@ function isCharacterDefeated() {
     return world.character.isDead() || world.character.energy < 20;
 }
 
-/*** Shows win when the endboss is dead.*/
-function checkEndbossWin() {
+/**
+ * Checks whether Pepe won the boss fight.
+ * @returns {boolean} True when the boss is defeated and Pepe is not defeated.
+ */
+function didCharacterWinBossFight() {
     const endboss = world.getEndboss?.();
-    if (!gameOverShown && !winShown && endboss?.isDead()) {
-        showWinScreen();
-    }
+    return Boolean(world?.winTriggered || endboss?.isDead()) && !isCharacterDefeated();
 }
 
 /*** Handles keyboard down input.

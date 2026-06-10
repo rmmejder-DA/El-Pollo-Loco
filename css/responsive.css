@@ -72,3 +72,12 @@
         right: 80px;
     }
 }
+
+@media only screen and (max-width: 900px) {
+    #fullscreen:fullscreen,
+    #fullscreen:-webkit-full-screen,
+    #fullscreen:-ms-fullscreen {
+        background-image: none;
+        background-color: #000000;
+    }
+}

@@ -243,12 +243,19 @@ class World extends DrawableObject {
 
     /** Schedules the win screen after the boss dies. */
     triggerWinAfterBossDefeat() {
-        if (this.winTriggered) {
+        if (this.winTriggered || !this.canCharacterWinBossFight()) {
             return;
         }
         this.winTriggered = true;
         this.winScreenVisibleAt = Date.now() + END_SCREEN_DELAY_MS;
-        showWinScreen?.();
+    }
+
+    /**
+     * Checks whether Pepe is still alive enough to win the boss fight.
+     * @returns {boolean} True when Pepe can still be declared the winner.
+     */
+    canCharacterWinBossFight() {
+        return Boolean(this.character) && !this.character.isDead() && this.character.energy >= 20;
     }
 
     /**

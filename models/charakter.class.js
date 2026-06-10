@@ -1,75 +1,20 @@
 class Charakter extends MovableObject {
-    height = 260;
-    width = 150;
-    groundY = 180;
+    height = CHARAKTER_DEFAULTS.height;
+    width = CHARAKTER_DEFAULTS.width;
+    groundY = CHARAKTER_DEFAULTS.groundY;
     y = this.groundY;
-    speed = 7;
-    speedY = 0;
-    acceleration = 2;
-    gravity = 1;
-    offset = {top: 95, right: 35, bottom: 10, left: 35};
+    speed = CHARAKTER_DEFAULTS.speed;
+    speedY = CHARAKTER_DEFAULTS.speedY;
+    acceleration = CHARAKTER_DEFAULTS.acceleration;
+    gravity = CHARAKTER_DEFAULTS.gravity;
+    offset = CHARAKTER_DEFAULTS.offset;
 
-    IMAGES_HURT = [
-        "img/2_character_pepe/4_hurt/H-41.png",
-        "img/2_character_pepe/4_hurt/H-42.png",
-        "img/2_character_pepe/4_hurt/H-43.png"
-    ];
-
-    IMAGES_DEAD = [
-        "img/2_character_pepe/5_dead/D-51.png",
-        "img/2_character_pepe/5_dead/D-52.png",
-        "img/2_character_pepe/5_dead/D-53.png",
-        "img/2_character_pepe/5_dead/D-54.png",
-        "img/2_character_pepe/5_dead/D-55.png",
-        "img/2_character_pepe/5_dead/D-56.png"
-    ];
-
-    IMAGES_WALKING = [
-        "img/2_character_pepe/2_walk/W-21.png",
-        "img/2_character_pepe/2_walk/W-22.png",
-        "img/2_character_pepe/2_walk/W-23.png",
-        "img/2_character_pepe/2_walk/W-24.png",
-        "img/2_character_pepe/2_walk/W-25.png",
-        "img/2_character_pepe/2_walk/W-26.png"
-    ];
-
-    IMAGES_JUMPING = [
-        "img/2_character_pepe/3_jump/J-31.png",
-        "img/2_character_pepe/3_jump/J-32.png",
-        "img/2_character_pepe/3_jump/J-33.png",
-        "img/2_character_pepe/3_jump/J-34.png",
-        "img/2_character_pepe/3_jump/J-35.png",
-        "img/2_character_pepe/3_jump/J-36.png",
-        "img/2_character_pepe/3_jump/J-37.png",
-        "img/2_character_pepe/3_jump/J-38.png",
-        "img/2_character_pepe/3_jump/J-39.png"
-    ];
-
-    IMAGES_IDLE = [
-        "img/2_character_pepe/1_idle/idle/I-1.png",
-        "img/2_character_pepe/1_idle/idle/I-2.png",
-        "img/2_character_pepe/1_idle/idle/I-3.png",
-        "img/2_character_pepe/1_idle/idle/I-4.png",
-        "img/2_character_pepe/1_idle/idle/I-5.png",
-        "img/2_character_pepe/1_idle/idle/I-6.png",
-        "img/2_character_pepe/1_idle/idle/I-7.png",
-        "img/2_character_pepe/1_idle/idle/I-8.png",
-        "img/2_character_pepe/1_idle/idle/I-9.png",
-        "img/2_character_pepe/1_idle/idle/I-10.png"
-    ];
-
-    IMAGES_LONG_IDLE = [
-        "img/2_character_pepe/1_idle/long_idle/I-11.png",
-        "img/2_character_pepe/1_idle/long_idle/I-12.png",
-        "img/2_character_pepe/1_idle/long_idle/I-13.png",
-        "img/2_character_pepe/1_idle/long_idle/I-14.png",
-        "img/2_character_pepe/1_idle/long_idle/I-15.png",
-        "img/2_character_pepe/1_idle/long_idle/I-16.png",
-        "img/2_character_pepe/1_idle/long_idle/I-17.png",
-        "img/2_character_pepe/1_idle/long_idle/I-18.png",
-        "img/2_character_pepe/1_idle/long_idle/I-19.png",
-        "img/2_character_pepe/1_idle/long_idle/I-20.png"
-    ];
+    IMAGES_HURT = CHARAKTER_ASSETS.hurt;
+    IMAGES_DEAD = CHARAKTER_ASSETS.dead;
+    IMAGES_WALKING = CHARAKTER_ASSETS.walking;
+    IMAGES_JUMPING = CHARAKTER_ASSETS.jumping;
+    IMAGES_IDLE = CHARAKTER_ASSETS.idle;
+    IMAGES_LONG_IDLE = CHARAKTER_ASSETS.longIdle;
 
     world;
     walking_sound = new Audio("audio/walking.mp3");
@@ -77,11 +22,22 @@ class Charakter extends MovableObject {
     deathAnimationStarted = false;
     walkingAudioActive = false;
     walkingFadeInterval = null;
-    walkingVolume = 0.25;
+    walkingVolume = CHARAKTER_DEFAULTS.walkingVolume;
     activeAnimation = null;
+    lastAnimationFrameAt = 0;
+    normalJumpStartFrameIndex = CHARAKTER_DEFAULTS.normalJumpStartFrameIndex;
+    fastJumpFrameCount = CHARAKTER_DEFAULTS.fastJumpFrameCount;
+    jumpLoopStartFrameIndex = this.normalJumpStartFrameIndex;
+    stompJumpFrameIndex = CHARAKTER_DEFAULTS.stompJumpFrameIndex;
+    stompJumpLastFrameIndex = CHARAKTER_DEFAULTS.stompJumpLastFrameIndex;
+    jumpShadowStartFrameIndex = CHARAKTER_DEFAULTS.jumpShadowStartFrameIndex;
+    jumpShadowGroundDistance = CHARAKTER_DEFAULTS.jumpShadowGroundDistance;
+    stompBounceActive = false;
+    firstJumpFrameInterval = CHARAKTER_DEFAULTS.firstJumpFrameInterval;
+    jumpFrameInterval = CHARAKTER_DEFAULTS.jumpFrameInterval;
     idleStartedAt = null;
-    longIdleDelay = 5000;
-    hurtMovementLockMs = 350;
+    longIdleDelay = CHARAKTER_DEFAULTS.longIdleDelay;
+    hurtMovementLockMs = CHARAKTER_DEFAULTS.hurtMovementLockMs;
 
     /*** Returns Pepe's maximum x position.
      * @returns {number} The maximum x position for Pepe.*/
@@ -122,11 +78,24 @@ class Charakter extends MovableObject {
     /*** Plays a character animation sequence.
      * @param {string[]} images - The animation frame paths.*/
     playCharacterAnimation(images) {
-        if (this.activeAnimation !== images) {
-            this.currentImageIndex = 0;
-            this.activeAnimation = images;
-        }
-        this.playAnimation(images);
+        CharakterJumpLogic.playCharacterAnimation(this, images);
+    }
+
+    /**
+     * Checks whether jump frames with ground shadow should be hidden.
+     * @returns {boolean} True when Pepe is still too high above ground.
+     */
+    shouldHideJumpShadowFrames() {
+        return CharakterJumpLogic.shouldHideJumpShadowFrames(this);
+    }
+
+    /**
+     * Checks whether the current animation should advance to the next frame.
+     * @param {string[]} images - The animation frame paths.
+     * @returns {boolean} True when the next frame should be shown now.
+     */
+    shouldAdvanceAnimationFrame(images) {
+        return CharakterJumpLogic.shouldAdvanceAnimationFrame(this, images);
     }
 
     /** Resets the idle timer. */
@@ -254,8 +223,15 @@ class Charakter extends MovableObject {
         this.playCharacterAnimation(this.IMAGES_JUMPING);
     }
 
+    /** Forces the stomp jump frame so Pepe does not show the early air shadow on a chicken. */
+    showStompJumpFrame() {
+        CharakterJumpLogic.showStompJumpFrame(this);
+    }
+
     /** Plays the grounded animation state. */
     playGroundStateAnimation() {
+        this.stompBounceActive = false;
+        this.jumpLoopStartFrameIndex = this.normalJumpStartFrameIndex;
         this.deathAnimationStarted = false;
         if (!this.world || !this.world.keyboard) {
             return;}
@@ -358,11 +334,7 @@ class Charakter extends MovableObject {
 
     /** Applies jump input when Pepe is grounded. */
     updateJumpInput() {
-        if (!this.world.keyboard.space || this.isAboveGround()) {
-            return;}
-        this.resetIdleTimer();
-        this.playJumpSound();
-        this.jump();
+        CharakterJumpLogic.updateJumpInput(this);
     }
 
     /** Plays Pepe's jump sound. */

@@ -236,10 +236,13 @@ class Endboss extends MovableObject {
         this.fightStarted = true;
     }
 
-    /** Applies damage and knockback to the boss. */
-    hit() {
+    /**
+     * Applies damage and knockback to the boss.
+     * @param {number} [damage=25] - The damage amount.
+     */
+    hit(damage = 25) {
         const previousEnergy = this.energy;
-        super.hit(25);
+        super.hit(damage);
         if (this.energy === previousEnergy || !this.world || !this.world.character) {
             return;
         }

@@ -15,8 +15,8 @@ let i = 1;
 const STORAGE_KEY_GAME_PAUSED = "elPolloLoco.gamePaused";
 const STORAGE_KEY_GAME_MUTED = "elPolloLoco.gameMuted";
 const LOADING_DURATION = 2200;
-const END_SCREEN_DELAY_MS = 2000;
-const MOBILE_FULLSCREEN_MAX_WIDTH = 1200;
+const END_SCREEN_DELAY_MS = 1000;
+const MOBILE_FULLSCREEN_MAX_WIDTH = 1366;
 const LOADING_PEPE_IMAGES = [
     "img/2_character_pepe/2_walk/W-21.png",
     "img/2_character_pepe/2_walk/W-22.png",
@@ -52,7 +52,9 @@ function loadStoredBoolean(key, fallback) {
 function saveStoredBoolean(key, value) {
     try {
         localStorage.setItem(key, String(value));
-    } catch (error) { }
+    } catch (error) {
+        console.warn("Could not persist game setting in localStorage.", error);
+    }
 }
 
 /*** Checks whether the viewport should use mobile controls.
@@ -67,10 +69,46 @@ function isStartFullscreenViewport() {
     return isMobileViewport();
 }
 
+/**
+ * Detects whether the game runs on a real mobile/tablet device.
+ * @returns {boolean} True for phones/tablets, false for desktop browsers.
+ */
+function isLikelyMobileDevice() {
+    const ua = navigator.userAgent || "";
+    const uaDataMobile = navigator.userAgentData?.mobile === true;
+    const hasMobileUserAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isIpadDesktopUserAgent = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+    return uaDataMobile || hasMobileUserAgent || isIpadDesktopUserAgent;
+}
+
+/**
+ * Checks whether fullscreen should be auto-started on game start.
+ * @returns {boolean} True when viewport is mobile-sized on a real mobile device.
+ */
+function shouldAutoStartFullscreen() {
+    return isStartFullscreenViewport() && isLikelyMobileDevice();
+}
+
 /*** Checks whether canvas touch controls should be drawn.
  * @returns {boolean} True when canvas controls are active.*/
 function shouldUseCanvasMobileControls() {
     return canvasMobileControlsActive && world && !loadingShown && !gameOverShown && !winShown && !gamePaused;
+}
+
+/**
+ * Syncs responsive touch controls with the current viewport width.
+ * This also covers desktop browsers when side panels reduce the usable width.
+ */
+function syncResponsiveControlMode() {
+    const shouldEnableCanvasControls = isMobileViewport();
+    if (canvasMobileControlsActive === shouldEnableCanvasControls) {
+        return;
+    }
+    canvasMobileControlsActive = shouldEnableCanvasControls;
+    if (!canvasMobileControlsActive) {
+        resetCanvasMobileControls?.();
+        syncWalkingAudioFromInput?.();
+    }
 }
 
 /*** Checks whether pause and mute controls should be drawn.
