@@ -80,9 +80,11 @@ function showGameOverScreen() {
     gameOverShown = true;
     stopGameSound();
     playPepeDeadSound();
-    showElementById("gameOverScreen");
-    setMobileControlsVisible(false);
-    setTimeout(() => setGamePaused(true), 600);
+    setTimeout(() => {
+        setGamePaused(true);
+        showElementById("gameOverScreen");
+        setMobileControlsVisible(false);
+    }, END_SCREEN_DELAY_MS);
 }
 
 /*** Plays Pepe's death sound.*/
@@ -95,10 +97,12 @@ function playPepeDeadSound() {
 function showWinScreen() {
     if (winShown || gameOverShown) {return;}
     winShown = true;
-    setGamePaused(false);
     stopGameSound();
-    showElementById("winScreen");
-    setMobileControlsVisible(false);
+    setTimeout(() => {
+        setGamePaused(true);
+        showElementById("winScreen");
+        setMobileControlsVisible(false);
+    }, END_SCREEN_DELAY_MS);
 }
 
 /*** Restarts gameplay after win or game over.*/
@@ -187,6 +191,9 @@ function createEndbossStatusBar() {
 function resetWorldRuntimeState() {
     world.showEndbossStatusBar = false;
     world.bossPhaseStarted = false;
+    world.bossAttackUnlocked = false;
+    world.nextAngryChickenSpawnAt = 0;
+    world.nextFleeChickenSpawnAt = 0;
     world.throwableObjects = [];
     world.camera_x = 0;
     world.initializeCollectibleCounters();

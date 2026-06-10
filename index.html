@@ -29,6 +29,7 @@
     <script defer src="models/world-canvas-controls.class.js"></script>
     <script defer src="models/world-status-factory.class.js"></script>
     <script defer src="models/world-renderer.class.js"></script>
+    <script defer src="models/world-boss-manager.class.js"></script>
     <script defer src="models/world.class.js"></script>
     <script defer src="js/game-state.js"></script>
     <script defer src="js/game-audio.js"></script>
@@ -106,8 +107,8 @@
                 <p>Name / Firma: Max Mejder</p>
                 <p>Anschrift: Almendorfer Str 15, 36100 Petersberg</p>
                 <p>E-Mail: rmmejder@gmail.com</p>
-                <p>Verantwortlich für den Inhalt: Max Mejder</p>
-                <p class="impressum-note">Dieses Spiel ist ausschließlich zur privaten Nutzung bestimmt. Eine gewerbliche Nutzung oder Weitergabe ist nicht gestattet.</p>
+                <p>Verantwortlich fuer den Inhalt: Max Mejder</p>
+                <p class="impressum-note">Dieses Spiel ist ausschliesslich zur privaten Nutzung bestimmt. Eine gewerbliche Nutzung oder Weitergabe ist nicht gestattet.</p>
                 <button class="close-button" onclick="toggleImpressum()">Close</button>
             </div>
         </div>
@@ -126,7 +127,7 @@
             <button class="restart-button" onclick="restartGame()">Restart Game</button>
         </div>
 
-        <div id="winScreen" class="game-over-screen hidden">
+        <div id="winScreen" class="win-screen hidden">
             <img src="img/You won, you lost/You Win A.png" alt="You Win">
             <button class="restart-button" onclick="restartGame()">Restart Game</button>
         </div>

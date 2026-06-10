@@ -45,7 +45,6 @@ class WorldRenderer {
         this.drawStatusBars();
         this.drawHealthHint();
         this.drawBossFightText();
-        this.drawWinImage();
         this.world.canvasControls.drawMobileCanvasControls();
         this.world.canvasControls.drawCanvasHudControls();
     }
@@ -163,26 +162,4 @@ class WorldRenderer {
         ctx.fillStyle = "#ffcc00";
     }
 
-    /** Draws the win image overlay. */
-    drawWinImage() {
-        const world = this.world;
-        if (!this.shouldDrawWinImage()) {
-            return;
-        }
-        world.ctx.save();
-        world.ctx.fillStyle = "rgba(0, 0, 0, 0.62)";
-        world.ctx.fillRect(0, 0, world.canvas.width, world.canvas.height);
-        world.ctx.drawImage(world.winImage, 192, 80, 336, 240);
-        world.ctx.restore();
-    }
-
-    /**
-     * Checks whether the win image should be visible.
-     * @returns {boolean} True when the win image should be drawn.
-     */
-    shouldDrawWinImage() {
-        const world = this.world;
-        return world.winTriggered && Date.now() >= world.winScreenVisibleAt &&
-            world.winImage.complete && world.winImage.naturalWidth !== 0;
-    }
 }

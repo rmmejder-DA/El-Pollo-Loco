@@ -15,6 +15,7 @@ let i = 1;
 const STORAGE_KEY_GAME_PAUSED = "elPolloLoco.gamePaused";
 const STORAGE_KEY_GAME_MUTED = "elPolloLoco.gameMuted";
 const LOADING_DURATION = 2200;
+const END_SCREEN_DELAY_MS = 2000;
 const MOBILE_FULLSCREEN_MAX_WIDTH = 1200;
 const LOADING_PEPE_IMAGES = [
     "img/2_character_pepe/2_walk/W-21.png",

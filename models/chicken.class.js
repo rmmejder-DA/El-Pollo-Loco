@@ -3,6 +3,7 @@ class Chicken extends MovableObject {
     width = 70;
     y = 370;
     groundY = 370;
+    variant = "normal";
     isDead = false;
     chasePepe = false;
     offset = {
@@ -22,19 +23,55 @@ class Chicken extends MovableObject {
         "img/3_enemies_chicken/chicken_normal/2_dead/dead.png"
     ];
 
+    SMALL_IMAGES_WALKING = [
+        "img/3_enemies_chicken/chicken_small/1_walk/1_w.png",
+        "img/3_enemies_chicken/chicken_small/1_walk/2_w.png",
+        "img/3_enemies_chicken/chicken_small/1_walk/3_w.png"
+    ];
+
+    SMALL_IMAGES_DEAD = [
+        "img/3_enemies_chicken/chicken_small/2_dead/dead.png"
+    ];
+
     /**
      * Creates a chicken enemy.
      * @param {number} [startX] - The chicken start x position.
      */
-    constructor(startX) {
-        super().loadImage("img/3_enemies_chicken/chicken_normal/1_walk/1_w.png");
-        this.loadImages(this.IMAGES_WALKING);
-        this.loadImages(this.IMAGES_DEAD);
+    constructor(startX, variant = "normal") {
+        super();
+        this.variant = variant === "small" ? "small" : "normal";
+        this.configureVariant();
 
         this.x = typeof startX === "number" ? startX : 200 + Math.random() * 500;
         this.speed = 0.75 + Math.random() * 0.1;
         this.applyGravity();
         this.animate();
+    }
+
+    /** Applies sprite set and size for the selected chicken variant. */
+    configureVariant() {
+        if (this.variant !== "small") {
+            this.loadImage(this.IMAGES_WALKING[0]);
+            this.loadImages(this.IMAGES_WALKING);
+            this.loadImages(this.IMAGES_DEAD);
+            return;
+        }
+
+        this.height = 60;
+        this.width = 60;
+        this.y = 380;
+        this.groundY = 380;
+        this.offset = {
+            top: 6,
+            right: 6,
+            bottom: 4,
+            left: 6
+        };
+        this.IMAGES_WALKING = [...this.SMALL_IMAGES_WALKING];
+        this.IMAGES_DEAD = [...this.SMALL_IMAGES_DEAD];
+        this.loadImage(this.IMAGES_WALKING[0]);
+        this.loadImages(this.IMAGES_WALKING);
+        this.loadImages(this.IMAGES_DEAD);
     }
 
     /** Starts chicken movement and animation loops. */
@@ -85,10 +122,8 @@ class Chicken extends MovableObject {
         }
     }
 
-    /**
-     * Checks whether the character is nearby and should trigger jump.
-     * @returns {boolean} True when Pepe is within jump range.
-     */
+    /*** Checks whether the character is nearby and should trigger jump.
+     * @returns {boolean} True when Pepe is within jump range.*/
     isCharacterNearby() {
         const distanceThreshold = 200;
         if (typeof this.world !== "object" || !this.world.character) {
@@ -98,10 +133,8 @@ class Chicken extends MovableObject {
         return distance < distanceThreshold;
     }
 
-    /**
-     * Checks whether chicken updates should be skipped.
-     * @returns {boolean} True when the chicken frame is skipped.
-     */
+    /*** Checks whether chicken updates should be skipped.
+     * @returns {boolean} True when the chicken frame is skipped.*/
     shouldSkipChickenFrame() {
         return this.isDead || (typeof isGamePaused === "function" && isGamePaused());
     }
@@ -109,18 +142,15 @@ class Chicken extends MovableObject {
     /** Marks the chicken as dead. */
     die() {
         if (this.isDead) {
-            return;
-        }
+            return;}
         this.isDead = true;
         this.speed = 0;
         this.speedY = 0;
         this.loadImage(this.IMAGES_DEAD[0]);
     }
 
-    /**
-     * Sets the world reference for chicken behavior.
-     * @param {World} world - The world reference.
-     */
+    /*** Sets the world reference for chicken behavior.
+     * @param {World} world - The world reference.*/
     setWorld(world) {
         this.world = world;
     }

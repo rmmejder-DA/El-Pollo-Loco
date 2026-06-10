@@ -11,6 +11,8 @@ class World extends DrawableObject {
     endbossStatusBar;
     showEndbossStatusBar = false;
     bossPhaseStarted = false;
+    bossAttackUnlocked = false;
+    nextAngryChickenSpawnAt = 0;
     nextFleeChickenSpawnAt = 0;
     coinCount = 0;
     bottleCount = 0;
@@ -32,6 +34,7 @@ class World extends DrawableObject {
     collisionHandler;
     canvasControls;
     renderer;
+    bossManager;
 
     /**
      * Creates a game world for the canvas.
@@ -73,6 +76,7 @@ class World extends DrawableObject {
         this.collisionHandler = new WorldCollisionHandler(this);
         this.canvasControls = new WorldCanvasControls(this);
         this.renderer = new WorldRenderer(this);
+        this.bossManager = new WorldBossManager(this);
     }
 
     /** Configures all world-owned audio files. */
@@ -149,6 +153,7 @@ class World extends DrawableObject {
             return;
         }
         this.handleBossPhase();
+        this.handleAngryBossChickens();
         this.handleFleeingChickens();
         this.collisionHandler.checkCollisions();
         this.collisionHandler.checkCollectibleCollisions();
@@ -173,9 +178,26 @@ class World extends DrawableObject {
             return;
         }
         this.throwBottleFromCharacter();
+        this.unlockBossAttackAfterFirstThrow();
         this.bottleCount--;
         this.keyboard.D = false;
         this.updateCollectibleStatusBars();
+    }
+
+    /** Unlocks boss attacks after Pepe's first bottle throw in boss phase. */
+    unlockBossAttackAfterFirstThrow() {
+        if (!this.bossPhaseStarted || this.bossAttackUnlocked) {
+            return;
+        }
+        this.bossAttackUnlocked = true;
+    }
+
+    /**
+     * Checks whether the endboss can actively attack Pepe.
+     * @returns {boolean} True when boss attacks are unlocked.
+     */
+    canEndbossAttack() {
+        return this.bossAttackUnlocked;
     }
 
     /** Creates one throwable bottle from Pepe's hand. */
@@ -225,8 +247,8 @@ class World extends DrawableObject {
             return;
         }
         this.winTriggered = true;
-        this.winScreenVisibleAt = Date.now() + 700;
-        setTimeout(() => showWinScreen?.(), 700);
+        this.winScreenVisibleAt = Date.now() + END_SCREEN_DELAY_MS;
+        showWinScreen?.();
     }
 
     /**
@@ -318,130 +340,43 @@ class World extends DrawableObject {
         }
     }
 
-    /** Starts the endboss phase when Pepe gets close. */
+    /** Delegates boss phase activation to the boss manager. */
     handleBossPhase() {
-        const endboss = this.getEndboss();
-        if (!this.shouldStartBossPhase(endboss)) {
-            return;
-        }
-        this.clearRegularChickens();
-        this.activateBossUi(endboss);
-        this.configureBossFight(endboss);
-        endboss.startFight?.();
+        this.bossManager.handleBossPhase();
     }
 
-    /**
-     * Checks whether the boss phase should start.
-     * @param {Endboss} endboss - The endboss instance.
-     * @returns {boolean} True when the boss phase should start.
-     */
-    shouldStartBossPhase(endboss) {
-        return Boolean(endboss && !this.bossPhaseStarted && this.character.x >= endboss.x - 500);
+    /** Delegates angry-boss chicken spawns to the boss manager. */
+    handleAngryBossChickens() {
+        this.bossManager.handleAngryBossChickens();
     }
 
-    /** Removes normal chickens at boss phase start. */
-    clearRegularChickens() {
-        this.level.enemies = (this.level.enemies || []).filter((enemy) => !(enemy instanceof Chicken));
-    }
-
-    /** Spawns chasing chickens when Pepe flees from the boss. */
+    /** Delegates fleeing chicken spawns to the boss manager. */
     handleFleeingChickens() {
-        const endboss = this.getEndboss();
-        if (!this.bossPhaseStarted || !endboss || endboss.isDead()) {
-            return;
-        }
-        if (!this.isCharacterFleeingBoss(endboss) || Date.now() < this.nextFleeChickenSpawnAt) {
-            return;
-        }
-        this.spawnChasingChicken(this.character.x + 720);
-        this.spawnChasingChicken(this.character.x - 720);
-        this.nextFleeChickenSpawnAt = Date.now() + 2500;
+        this.bossManager.handleFleeingChickens();
     }
 
     /**
-     * Checks whether Pepe runs away from the boss.
-     * @param {Endboss} endboss - The endboss instance.
-     * @returns {boolean} True when Pepe flees from the boss.
+     * Returns the active endboss.
+     * @returns {Endboss|undefined} The current endboss.
      */
-    isCharacterFleeingBoss(endboss) {
-        return this.character.x < endboss.x - 600;
-    }
-
-    /**
-     * Spawns a single chicken that chases Pepe.
-     * @param {number} spawnX - The chicken spawn x position.
-     */
-    spawnChasingChicken(spawnX) {
-        const startX = Math.max(0, spawnX);
-        const chicken = new Chicken(startX);
-        chicken.chasePepe = true;
-        chicken.setWorld?.(this);
-        this.level.enemies.push(chicken);
-    }
-
-    /**
-     * Shows boss UI and plays the boss sound.
-     * @param {Endboss} endboss - The endboss instance.
-     */
-    activateBossUi(endboss) {
-        this.showEndbossStatusBar = true;
-        this.endbossStatusBar.setPercentage(endboss.energy);
-        this.bossPhaseStarted = true;
-        this.bossFightTextUntil = Date.now() + 2200;
-        this.playCollectibleSound(this.chickenBossSound);
-    }
-
-    /**
-     * Configures the boss fight movement bounds.
-     * @param {Endboss} endboss - The endboss instance.
-     */
-    configureBossFight(endboss) {
-        const minX = Math.max(1200, endboss.x - 650);
-        const maxX = Math.min(this.level.level_end_x - endboss.width + 20, endboss.x + 1200);
-        endboss.setFightBounds?.(minX, maxX);
-    }
-
-    /** Returns the active endboss. */
     getEndboss() {
-        return this.findEndboss(this.level.clouds) || this.findEndboss(this.level.enemies);
+        return this.bossManager.getEndboss();
     }
 
     /**
-     * Finds an endboss inside a collection.
-     * @param {object[]} [objects=[]] - The objects to search.
-     * @returns {Endboss|undefined} The found endboss or undefined.
+     * Calculates Pepe's maximum x position.
+     * @returns {number} The maximum x position for Pepe.
      */
-    findEndboss(objects = []) {
-        return objects.find((object) => object instanceof Endboss);
-    }
-
-    /** Calculates Pepe's maximum x position. */
     getCharacterMaxX() {
-        const levelMaxX = this.getLevelCharacterMaxX();
-        const endboss = this.getEndboss();
-        if (!endboss || this.bossPhaseStarted) {
-            return Math.max(0, levelMaxX);
-        }
-        return this.getBossGateMaxX(levelMaxX, endboss);
-    }
-
-    /** Calculates the level end limit for Pepe. */
-    getLevelCharacterMaxX() {
-        return (this.level?.level_end_x ?? 0) - (this.character?.width || 0);
+        return this.bossManager.getCharacterMaxX();
     }
 
     /**
-     * Calculates the pre-boss gate x limit.
-     * @param {number} levelMaxX - The level end limit.
-     * @param {Endboss} endboss - The endboss instance.
-     * @returns {number} The gate x limit before the boss.
+     * Calculates Pepe's minimum x position.
+     * @returns {number} The minimum x position for Pepe.
      */
-    getBossGateMaxX(levelMaxX, endboss) {
-        if (endboss.energy <= 50) {
-            return Math.max(0, levelMaxX);
-        }
-        const bossGateX = endboss.x - this.character.width + 40;
-        return Math.max(0, Math.min(levelMaxX, bossGateX));
+    getCharacterMinX() {
+        return this.bossManager.getCharacterMinX();
     }
 
     /** Updates camera position from Pepe's position. */

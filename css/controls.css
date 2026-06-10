@@ -105,6 +105,7 @@
     cursor: pointer;
     z-index: 1000;
     pointer-events: auto;
+    top: -160px;
 }
 
 .keyboard-info-screen {

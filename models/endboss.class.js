@@ -1,7 +1,8 @@
 class Endboss extends MovableObject {
-    energy = 100;
+    energy = 80;
     height = 400;
     width = 250;
+    groundY = 50;
     y = 50;
     x = 2000;
     offset = {
@@ -18,15 +19,25 @@ class Endboss extends MovableObject {
     deadAnimationPlayed = false;
     fightMinX = 1450;
     fightMaxX = 3350;
-    targetDistance = 80;
-    attackCooldownMs = 750;
-    attackDurationMs = 520;
+    targetDistance = 125;
+    attackTriggerDistance = 205;
+    attackCooldownMs = 1150;
+    attackDurationMs = 650;
     lastAttackAt = 0;
     attackingUntil = 0;
+    attackDirection = 1;
+    attackLungeSpeed = 6.9;
+    attackJumpForce = 22;
     knockbackUntil = 0;
     knockbackDirection = 0;
     knockbackDurationMs = 360;
     knockbackSpeed = 5;
+    retreatTriggerDistance = 115;
+    retreatDurationMs = 1200;
+    retreatCooldownMs = 1400;
+    retreatSpeed = 4.8;
+    retreatUntil = 0;
+    lastRetreatAt = 0;
     activeAnimation = null;
 
     IMAGES_WALKING = [
@@ -35,6 +46,7 @@ class Endboss extends MovableObject {
         "img/4_enemie_boss_chicken/1_walk/G3.png",
         "img/4_enemie_boss_chicken/1_walk/G4.png"
     ];
+
     IMAGES_ALERT = [
         "img/4_enemie_boss_chicken/2_alert/G5.png",
         "img/4_enemie_boss_chicken/2_alert/G6.png",
@@ -45,6 +57,7 @@ class Endboss extends MovableObject {
         "img/4_enemie_boss_chicken/2_alert/G11.png",
         "img/4_enemie_boss_chicken/2_alert/G12.png"
     ];
+
     IMAGES_ATTACK = [
         "img/4_enemie_boss_chicken/3_attack/G13.png",
         "img/4_enemie_boss_chicken/3_attack/G14.png",
@@ -55,11 +68,13 @@ class Endboss extends MovableObject {
         "img/4_enemie_boss_chicken/3_attack/G19.png",
         "img/4_enemie_boss_chicken/3_attack/G20.png"
     ];
+    
     IMAGES_HURT = [
         "img/4_enemie_boss_chicken/4_hurt/G21.png",
         "img/4_enemie_boss_chicken/4_hurt/G22.png",
         "img/4_enemie_boss_chicken/4_hurt/G23.png"
     ];
+
     IMAGES_DEAD = [
         "img/4_enemie_boss_chicken/5_dead/G24.png",
         "img/4_enemie_boss_chicken/5_dead/G25.png",
@@ -77,6 +92,7 @@ class Endboss extends MovableObject {
         this.loadImages(this.IMAGES_DEAD);
         this.loadImage(this.IMAGES_WALKING[0]);
         this.x = 2000;
+        this.applyGravity();
         this.animate();
     }
 
@@ -93,29 +109,29 @@ class Endboss extends MovableObject {
         }
         const character = this.world.character;
         const distance = character.x - this.x;
+        const absoluteDistance = Math.abs(distance);
         this.otherDirection = distance > 0;
-        this.updateAttackState(Math.abs(distance));
+        this.updateRetreatState(absoluteDistance);
+        this.updateAttackState(absoluteDistance);
         this.moveByCurrentState(character, distance);
     }
 
-    /**
-     * Checks whether movement should be skipped.
-     * @returns {boolean} True when the movement frame is skipped.
-     */
+    /*** Checks whether movement should be skipped.
+     * @returns {boolean} True when the movement frame is skipped.*/
     shouldSkipMovementFrame() {
         return this.isPaused() || this.isDead() || !this.fightStarted || !this.world?.character;
     }
 
-    /**
-     * Moves the boss according to its current state.
+    /*** Moves the boss according to its current state.
      * @param {Charakter} character - Pepe's character instance.
-     * @param {number} distance - Horizontal distance to Pepe.
-     */
+     * @param {number} distance - Horizontal distance to Pepe.*/
     moveByCurrentState(character, distance) {
         if (this.isKnockedBack()) {
             this.moveKnockback();
         } else if (this.isAttacking()) {
             this.moveAttackStep(distance);
+        } else if (this.isRetreating()) {
+            this.moveRetreatStep(distance);
         } else {
             this.moveTowardCharacter(character);
         }
@@ -127,12 +143,22 @@ class Endboss extends MovableObject {
         this.keepInsideFightBounds();
     }
 
+    /*** Moves the boss during an attack.
+     * @param {number} distance - Horizontal distance to Pepe.*/
+    moveAttackStep(distance) {
+        const direction = this.attackDirection || (distance > 0 ? 1 : -1);
+        const inAirMultiplier = this.isAboveGround() ? 1.15 : 1;
+        this.x += direction * this.attackLungeSpeed * inAirMultiplier;
+        this.keepInsideFightBounds();
+    }
+
     /**
-     * Moves the boss during an attack.
+     * Moves the boss one step backwards to open space.
      * @param {number} distance - Horizontal distance to Pepe.
      */
-    moveAttackStep(distance) {
-        this.x += distance > 0 ? this.speed * 0.8 : -this.speed * 0.8;
+    moveRetreatStep(distance) {
+        const directionAwayFromPepe = distance > 0 ? -1 : 1;
+        this.x += directionAwayFromPepe * this.retreatSpeed;
         this.keepInsideFightBounds();
     }
 
@@ -148,10 +174,8 @@ class Endboss extends MovableObject {
         this.playAliveAnimation();
     }
 
-    /**
-     * Checks whether the game is paused.
-     * @returns {boolean} True when the game is paused.
-     */
+    /*** Checks whether the game is paused.
+     * @returns {boolean} True when the game is paused.*/
     isPaused() {
         return typeof isGamePaused === "function" && isGamePaused();
     }
@@ -197,10 +221,8 @@ class Endboss extends MovableObject {
         }
     }
 
-    /**
-     * Plays a boss animation and resets the frame on state change.
-     * @param {string[]} images - The animation frame paths.
-     */
+    /*** Plays a boss animation and resets the frame on state change.
+     * @param {string[]} images - The animation frame paths.*/
     playBossAnimation(images) {
         if (this.activeAnimation !== images) {
             this.currentImageIndex = 0;
@@ -217,7 +239,7 @@ class Endboss extends MovableObject {
     /** Applies damage and knockback to the boss. */
     hit() {
         const previousEnergy = this.energy;
-        super.hit(20);
+        super.hit(25);
         if (this.energy === previousEnergy || !this.world || !this.world.character) {
             return;
         }
@@ -227,11 +249,9 @@ class Endboss extends MovableObject {
         this.knockbackUntil = Date.now() + this.knockbackDurationMs;
     }
 
-    /**
-     * Sets the horizontal boss fight bounds.
+    /*** Sets the horizontal boss fight bounds.
      * @param {number} minX - The minimum x position.
-     * @param {number} maxX - The maximum x position.
-     */
+     * @param {number} maxX - The maximum x position.*/
     setFightBounds(minX, maxX) {
         if (typeof minX === "number" && typeof maxX === "number" && maxX > minX) {
             this.fightMinX = minX;
@@ -244,10 +264,8 @@ class Endboss extends MovableObject {
         this.x = Math.max(this.fightMinX, Math.min(this.x, this.fightMaxX));
     }
 
-    /**
-     * Moves the boss toward Pepe.
-     * @param {Charakter} character - Pepe's character instance.
-     */
+    /*** Moves the boss toward Pepe.
+     * @param {Charakter} character - Pepe's character instance.*/
     moveTowardCharacter(character) {
         const targetX = Math.max(this.fightMinX, Math.min(character.x, this.fightMaxX));
         const distanceToTarget = targetX - this.x;
@@ -258,39 +276,78 @@ class Endboss extends MovableObject {
         this.keepInsideFightBounds();
     }
 
-    /**
-     * Updates attack timing from distance.
-     * @param {number} distanceToCharacter - Distance to Pepe.
-     */
+    /*** Updates attack timing from distance.
+     * @param {number} distanceToCharacter - Distance to Pepe.*/
     updateAttackState(distanceToCharacter) {
+        if (this.isRetreating()) {
+            return;
+        }
+        if (typeof this.world?.canEndbossAttack === "function" && !this.world.canEndbossAttack()) {
+            return;
+        }
         const now = Date.now();
-        if (distanceToCharacter <= 190 && now - this.lastAttackAt >= this.attackCooldownMs) {
-            this.lastAttackAt = now;
-            this.attackingUntil = now + this.attackDurationMs;
+        if (distanceToCharacter <= this.attackTriggerDistance && now - this.lastAttackAt >= this.attackCooldownMs) {
+            this.startAttack();
             this.world?.spawnBossBottleDrops?.(1);
         }
     }
 
     /**
-     * Checks whether the boss is attacking.
-     * @returns {boolean} True when the boss is attacking.
+     * Starts retreat phases when Pepe gets too close.
+     * @param {number} distanceToCharacter - Distance to Pepe.
      */
+    updateRetreatState(distanceToCharacter) {
+        const now = Date.now();
+        if (this.isAttacking() || this.isKnockedBack() || this.isRetreating()) {
+            return;
+        }
+        if (distanceToCharacter > this.retreatTriggerDistance) {
+            return;
+        }
+        if (now - this.lastRetreatAt < this.retreatCooldownMs) {
+            return;
+        }
+        if (Math.random() < 0.7) {
+            this.lastRetreatAt = now;
+            this.retreatUntil = now + this.retreatDurationMs;
+        }
+    }
+
+    /** Starts one leap attack toward Pepe. */
+    startAttack() {
+        const now = Date.now();
+        const character = this.world?.character;
+        this.lastAttackAt = now;
+        this.attackingUntil = now + this.attackDurationMs;
+        this.attackDirection = character && character.x < this.x ? -1 : 1;
+
+        if (!this.isAboveGround()) {
+            this.speedY = this.attackJumpForce;
+        }
+    }
+
+    /*** Checks whether the boss is attacking.
+     * @returns {boolean} True when the boss is attacking.*/
     isAttacking() {
         return Date.now() < this.attackingUntil;
     }
 
-    /**
-     * Checks whether the boss is knocked back.
-     * @returns {boolean} True when the boss is knocked back.
-     */
+    /*** Checks whether the boss is knocked back.
+     * @returns {boolean} True when the boss is knocked back.*/
     isKnockedBack() {
         return Date.now() < this.knockbackUntil;
     }
 
     /**
-     * Checks whether the boss can damage Pepe.
-     * @returns {boolean} True when the boss can damage Pepe.
+     * Checks whether the boss is currently retreating.
+     * @returns {boolean} True when the boss is retreating.
      */
+    isRetreating() {
+        return Date.now() < this.retreatUntil;
+    }
+
+    /*** Checks whether the boss can damage Pepe.
+     * @returns {boolean} True when the boss can damage Pepe.*/
     canDamageCharacter() {
         return this.isAttacking();
     }

@@ -131,9 +131,14 @@ class WorldCollisionHandler {
         const bossCanDamage = endboss && typeof endboss.canDamageCharacter === "function"
             ? endboss.canDamageCharacter()
             : true;
+        const bossIsRetreating = endboss && typeof endboss.isRetreating === "function"
+            ? endboss.isRetreating()
+            : false;
 
         if (endboss && !endboss.isDead() && this.world.character.isColliding(endboss)) {
-            this.blockCharacterAt(endboss);
+            if (!bossIsRetreating) {
+                this.blockCharacterAt(endboss);
+            }
             if (bossCanDamage) {
                 this.damageCharacter();
             }

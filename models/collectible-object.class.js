@@ -1,12 +1,10 @@
 class CollectibleObject extends DrawableObject {
-    /**
-     * Creates a collectible object.
+    /*** Creates a collectible object.
      * @param {string} imagePath - The image source path.
      * @param {number} x - The x position.
      * @param {number} y - The y position.
      * @param {number} [width=80] - The object width.
-     * @param {number} [height=80] - The object height.
-     */
+     * @param {number} [height=80] - The object height.*/
     constructor(imagePath, x, y, width = 80, height = 80) {
         super();
         this.loadImage(imagePath);
@@ -27,11 +25,9 @@ class Coin extends CollectibleObject {
     rotationAngle = Math.random() * Math.PI * 2;
     rotationSpeed = 0.06;
 
-    /**
-     * Creates a coin pickup.
+    /*** Creates a coin pickup.
      * @param {number} x - The x position.
-     * @param {number} y - The y position.
-     */
+     * @param {number} y - The y position.*/
     constructor(x, y) {
         const image = Math.random() < 0.5
             ? "img/8_coin/coin_1.png"
@@ -39,10 +35,8 @@ class Coin extends CollectibleObject {
         super(image, x, y, 90, 90);
     }
 
-    /**
-     * Draws the rotating coin image.
-     * @param {CanvasRenderingContext2D} ctx - The drawing context.
-     */
+    /*** Draws the rotating coin image.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.*/
     draw(ctx) {
         if (typeof isGamePaused !== "function" || !isGamePaused()) {
             this.rotationAngle += this.rotationSpeed;
@@ -50,10 +44,8 @@ class Coin extends CollectibleObject {
         this.drawRotatedCoin(ctx);
     }
 
-    /**
-     * Draws the coin with its current rotation angle.
-     * @param {CanvasRenderingContext2D} ctx - The drawing context.
-     */
+    /*** Draws the coin with its current rotation angle.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.*/
     drawRotatedCoin(ctx) {
         const centerX = this.x + this.width / 2;
         const centerY = this.y + this.height / 2;
@@ -73,12 +65,10 @@ class BottlePickup extends CollectibleObject {
     gravity = 0.45;
     isSpawning = false;
 
-    /**
-     * Creates a bottle pickup.
+    /*** Creates a bottle pickup.
      * @param {number} x - The x position.
      * @param {number} y - The y position.
-     * @param {object} [options={}] - Optional spawn motion settings.
-     */
+     * @param {object} [options={}] - Optional spawn motion settings.*/
     constructor(x, y, options = {}) {
         const image = Math.random() < 0.5
             ? "img/6_salsa_bottle/1_salsa_bottle_on_ground.png"
@@ -87,11 +77,9 @@ class BottlePickup extends CollectibleObject {
         this.setupSpawnMotion(y, options);
     }
 
-    /**
-     * Configures optional spawn motion for boss-spit bottles.
+    /*** Configures optional spawn motion for boss-spit bottles.
      * @param {number} y - The initial bottle y position.
-     * @param {object} options - Optional spawn motion settings.
-     */
+     * @param {object} options - Optional spawn motion settings.*/
     setupSpawnMotion(y, options) {
         this.settleY = typeof options.settleY === "number" ? options.settleY : y;
         this.velocityX = options.velocityX || 0;
@@ -100,10 +88,8 @@ class BottlePickup extends CollectibleObject {
         this.isSpawning = this.velocityX !== 0 || this.velocityY !== 0 || this.settleY !== y;
     }
 
-    /**
-     * Draws the bottle and advances its spawn arc when active.
-     * @param {CanvasRenderingContext2D} ctx - The drawing context.
-     */
+    /*** Draws the bottle and advances its spawn arc when active.
+     * @param {CanvasRenderingContext2D} ctx - The drawing context.*/
     draw(ctx) {
         if (this.isSpawning && (typeof isGamePaused !== "function" || !isGamePaused())) {
             this.updateSpawnMotion();
@@ -116,11 +102,8 @@ class BottlePickup extends CollectibleObject {
         this.x += this.velocityX;
         this.y += this.velocityY;
         this.velocityY += this.gravity;
-
         if (this.y < this.settleY) {
-            return;
-        }
-
+            return;}
         this.y = this.settleY;
         this.velocityX = 0;
         this.velocityY = 0;
