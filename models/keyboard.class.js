@@ -3,6 +3,7 @@ class Keyboard {
     right = false;
     space = false;
     D = false;
+    throwRequested = false;
 
     /** Resets all keyboard flags. */
     reset() {
@@ -10,6 +11,7 @@ class Keyboard {
         this.right = false;
         this.space = false;
         this.D = false;
+        this.throwRequested = false;
     }
 
     /*** Sets one keyboard action flag.
@@ -20,7 +22,9 @@ class Keyboard {
         if (!this.isKnownKey(key)) {
             return false;
         }
-
+        if (key === "D" && isPressed && !this.D) {
+            this.throwRequested = true;
+        }
         this[key] = isPressed;
         return true;
     }
@@ -33,7 +37,21 @@ class Keyboard {
         this.left = pressedKeys.has("left");
         this.right = pressedKeys.has("right");
         this.space = pressedKeys.has("space");
-        this.D = pressedKeys.has("D");
+        const isThrowPressed = pressedKeys.has("D");
+        if (isThrowPressed && !this.D) {
+            this.throwRequested = true;
+        }
+        this.D = isThrowPressed;
+    }
+
+    /*** Consumes one pending throw request.
+     * @returns {boolean} True when a throw was requested since the last consume.*/
+    consumeThrowRequest() {
+        if (!this.throwRequested) {
+            return false;
+        }
+        this.throwRequested = false;
+        return true;
     }
 
     /*** Handles a key down event.

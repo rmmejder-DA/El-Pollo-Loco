@@ -58,9 +58,13 @@ class WorldRenderer {
         }
         const ctx = world.ctx;
         ctx.save();
-        ctx.globalAlpha = Math.min(1, timeLeft / 600);
-        const offsetY = 20 - (1500 - timeLeft) / 60;
-        ctx.drawImage(world.heartHintImage, 215, 18 + offsetY, 40, 40);
+        const elapsed = 1500 - timeLeft;
+        const scale = 1 + Math.min(0.35, elapsed / 900);
+        const size = 92 * scale;
+        const x = (world.canvas.width - size) / 2;
+        const y = 54 - elapsed / 55;
+        ctx.globalAlpha = Math.min(1, timeLeft / 450);
+        ctx.drawImage(world.heartHintImage, x, y, size, size);
         ctx.restore();
     }
 

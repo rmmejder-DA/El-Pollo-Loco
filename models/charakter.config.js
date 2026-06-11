@@ -73,6 +73,7 @@ const CHARAKTER_DEFAULTS = Object.freeze({
     stompJumpLastFrameIndex: 5,
     jumpShadowStartFrameIndex: 6,
     jumpShadowGroundDistance: 45,
+    landingDuration: 200,
     firstJumpFrameInterval: 95,
     jumpFrameInterval: 120,
     longIdleDelay: 5000,

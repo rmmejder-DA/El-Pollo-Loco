@@ -2,7 +2,7 @@
  * @param {boolean} isVisible - Whether the button should be visible.*/
 function setFullscreenButtonVisible(isVisible) {
     const button = document.getElementById("fullscreenButton");
-    button?.classList.toggle("hidden", !isVisible || isMobileViewport());
+    button?.classList.toggle("hidden", !isVisible || !canUseDesktopFullscreen());
 }
 
 /*** Registers keyboard information interactions.*/

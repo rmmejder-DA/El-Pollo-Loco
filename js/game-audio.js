@@ -28,14 +28,30 @@ function updatePauseAudio(isPaused) {
 /*** Stops movement and background audio while paused.*/
 function pauseGameAudio() {
     resetMovementInput();
-    world?.character?.stopWalkingSound();
+    if (world?.character) {
+        CharakterAudio.stopWalkingSound(world.character);
+        CharakterAudio.stopSnoringSound(world.character);
+    }
     gameSound.pause();
+}
+
+/*** Starts audio playback and handles blocked or failed play requests.
+ * @param {HTMLAudioElement} audio - The audio element to play.
+ * @param {string} audioName - A label used for diagnostics.*/
+function playAudioWithCatch(audio, audioName) {
+    const playPromise = audio?.play?.();
+    if (!playPromise || typeof playPromise.catch !== "function") {
+        return;
+    }
+    playPromise.catch((error) => {
+        console.warn(`Audio playback for ${audioName} was blocked or failed.`, error);
+    });
 }
 
 /*** Resumes the background audio when allowed.*/
 function resumeGameAudio() {
-    if (world && !gameOverShown && !winShown && !gameMuted) {
-        gameSound.play().catch(() => { });
+    if (!gameMuted) {
+        playAudioWithCatch(gameSound, "gameSound");
     }
 }
 
@@ -57,6 +73,7 @@ function setAudioMuted(audio, isMuted) {
 function applyMuteState() {
     setAudioMuted(gameSound, gameMuted);
     setAudioMuted(pepeDeadSound, gameMuted);
+    setAudioMuted(youWinSound, gameMuted);
     world?.setMuted?.(gameMuted);
 }
 
@@ -71,7 +88,7 @@ function toggleGameMute() {
 function startGameSound() {
     gameSound.currentTime = 0;
     gameSound.muted = gameMuted;
-    gameSound.play().catch(() => { });
+    playAudioWithCatch(gameSound, "gameSound");
 }
 
 /*** Stops the looping background music.*/
@@ -85,9 +102,9 @@ function syncWalkingAudioFromInput() {
     if (shouldSkipWalkingAudio()) {
         return;}
     if (keyboard.left || keyboard.right) {
-        world.character.startWalkingSound();
+        CharakterAudio.startWalkingSound(world.character);
     } else {
-        world.character.stopWalkingSound();
+        CharakterAudio.stopWalkingSound(world.character);
     }
 }
 

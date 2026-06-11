@@ -136,8 +136,8 @@ class WorldBossManager {
      */
     configureBossFight(endboss) {
         const world = this.world;
-        const minX = Math.max(1200, endboss.x - 650);
-        const maxX = Math.min(world.level.level_end_x - endboss.width + 20, endboss.x + 1200);
+        const minX = 0;
+        const maxX = world.level.level_end_x - endboss.width + 20;
         endboss.setFightBounds?.(minX, maxX);
     }
 
@@ -169,7 +169,7 @@ class WorldBossManager {
             return Math.max(0, levelMaxX);
         }
         if (this.world.bossPhaseStarted) {
-            return this.getBossFightMaxX(levelMaxX, endboss);
+            return Math.max(0, levelMaxX);
         }
         return this.getBossGateMaxX(levelMaxX, endboss);
     }
@@ -179,13 +179,7 @@ class WorldBossManager {
      * @returns {number} The minimum x position for Pepe.
      */
     getCharacterMinX() {
-        const world = this.world;
-        const endboss = this.getEndboss();
-        if (!endboss || !world.bossPhaseStarted) {
-            return 0;
-        }
-        const leftBound = (endboss.fightMinX ?? 0) - world.character.width + 65;
-        return Math.max(0, Math.round(leftBound));
+        return 0;
     }
 
     /**
@@ -221,6 +215,6 @@ class WorldBossManager {
     getBossFightMaxX(levelMaxX, endboss) {
         const world = this.world;
         const rightBound = (endboss.fightMaxX ?? levelMaxX) - world.character.width + 30;
-        return Math.max(this.getCharacterMinX(), Math.min(levelMaxX, Math.round(rightBound)));
+        return Math.max(0, Math.min(levelMaxX, Math.round(rightBound)));
     }
 }

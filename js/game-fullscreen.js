@@ -10,7 +10,7 @@ function requestFullscreenOnMobileStart() {
  * @param {HTMLElement} fullscreenTarget - The element to open fullscreen for.
  * @returns {Promise<void>} A promise-like fullscreen result.*/
 function openFullscreen(fullscreenTarget = canvas) {
-    if (!fullscreenTarget) {
+    if (!fullscreenTarget || !canUseDesktopFullscreen()) {
         return Promise.resolve();
     }
     return requestFullscreenForTarget(fullscreenTarget);
@@ -21,7 +21,9 @@ function openFullscreen(fullscreenTarget = canvas) {
  * @returns {Promise<void>} A promise-like fullscreen result.*/
 function requestFullscreenForTarget(target) {
     if (target.requestFullscreen) {
-        return target.requestFullscreen().catch(() => { });
+        return target.requestFullscreen().catch((error) => {
+            console.warn("Fullscreen request was blocked or failed.", error);
+        });
     }
     requestLegacyFullscreen(target);
     return Promise.resolve();
@@ -63,6 +65,12 @@ function helpMe() {
 /*** Toggles the keyboard information screen.*/
 function toggleKeyboardInfo() {
     document.getElementById("keyboardInfo")?.classList.toggle("hidden");
+}
+
+/*** Toggles the game information screen.*/
+function toggleGameInfo() {
+    document.getElementById("gameInfo")?.classList.toggle("hidden");
+    event.stopPropagation();
 }
 
 /*** Toggles the mobile help overlay.*/

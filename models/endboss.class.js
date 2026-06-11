@@ -1,5 +1,5 @@
 class Endboss extends MovableObject {
-    energy = 80;
+    energy = 100;
     height = 400;
     width = 250;
     groundY = 50;

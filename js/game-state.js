@@ -6,6 +6,7 @@ let winShown = false;
 let loadingShown = false;
 let loadingPepeAnimation = null;
 let pepeDeadSound = new Audio("audio/pepeDead.mp3");
+let youWinSound = new Audio("audio/you-win.mp3");
 let gameSound = new Audio("audio/gameSound.mp3");
 let activeCanvasPointers = new Map();
 let canvasMobileControlsActive = false;
@@ -81,12 +82,18 @@ function isLikelyMobileDevice() {
     return uaDataMobile || hasMobileUserAgent || isIpadDesktopUserAgent;
 }
 
+/*** Checks whether fullscreen should be available in UI and logic.
+ * @returns {boolean} True when running on desktop-like devices.*/
+function canUseDesktopFullscreen() {
+    return !isLikelyMobileDevice();
+}
+
 /**
  * Checks whether fullscreen should be auto-started on game start.
- * @returns {boolean} True when viewport is mobile-sized on a real mobile device.
+ * @returns {boolean} True when fullscreen should auto-start.
  */
 function shouldAutoStartFullscreen() {
-    return isStartFullscreenViewport() && isLikelyMobileDevice();
+    return false;
 }
 
 /*** Checks whether canvas touch controls should be drawn.

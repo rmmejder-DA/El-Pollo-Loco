@@ -19,8 +19,10 @@ class Charakter extends MovableObject {
     world;
     walking_sound = new Audio("audio/walking.mp3");
     jump_sound = new Audio("audio/jump.mp3");
+    snoring_sound = new Audio("audio/snoring.mp3");
     deathAnimationStarted = false;
     walkingAudioActive = false;
+    snoringAudioActive = false;
     walkingFadeInterval = null;
     walkingVolume = CHARAKTER_DEFAULTS.walkingVolume;
     activeAnimation = null;
@@ -38,6 +40,10 @@ class Charakter extends MovableObject {
     idleStartedAt = null;
     longIdleDelay = CHARAKTER_DEFAULTS.longIdleDelay;
     hurtMovementLockMs = CHARAKTER_DEFAULTS.hurtMovementLockMs;
+    landingDuration = CHARAKTER_DEFAULTS.landingDuration;
+    landingActive = false;
+    landingStartedAt = null;
+    wasAboveGround = false;
 
     /*** Returns Pepe's maximum x position.
      * @returns {number} The maximum x position for Pepe.*/
@@ -115,86 +121,45 @@ class Charakter extends MovableObject {
             : this.IMAGES_IDLE;
     }
 
-    /** Stops Pepe's walking sound with a fade out. */
-    stopWalkingSound() {
-        if (!this.walkingAudioActive) {
-            return;}
-        if (this.walkingFadeInterval) {
-            return;}
-        this.walkingFadeInterval = setInterval(() => {
-            this.fadeWalkingSoundStep();
-        }, 30);
-    }
-
-    /** Applies one fade-out step to the walking sound. */
-    fadeWalkingSoundStep() {
-        const nextVolume = Math.max(0, this.walking_sound.volume - 0.08);
-        this.walking_sound.volume = nextVolume;
-        if (nextVolume <= 0) {
-            this.finishWalkingSoundFade();
-        }
-    }
-
-    /** Finishes the walking sound fade-out. */
-    finishWalkingSoundFade() {
-        clearInterval(this.walkingFadeInterval);
-        this.walkingFadeInterval = null;
-        this.walking_sound.pause();
-        this.walkingAudioActive = false;
-        this.walking_sound.volume = this.walkingVolume;
-    }
-
-    /*** Applies mute state to Pepe's sounds.
-     * @param {boolean} isMuted - Whether audio should be muted.*/
-    setMuted(isMuted) {
-        this.walking_sound.muted = isMuted;
-        this.jump_sound.muted = isMuted;
-        if (isMuted) {
-            this.stopWalkingSound();}
-    }
-
-    /** Starts Pepe's walking sound when audio is enabled. */
-    startWalkingSound() {
-        if (typeof isGameMuted === "function" && isGameMuted()) {
-            return;}
-        this.cancelWalkingFade();
-        if (this.walkingAudioActive) {
-            return;}
-        this.playWalkingSound();
-    }
-
-    /** Starts the walking sound playback. */
-    playWalkingSound() {
-        this.walking_sound.volume = this.walkingVolume;
-        this.walkingAudioActive = true;
-        this.walking_sound.play().catch(() => {
-            this.walkingAudioActive = false;
-        });
-    }
-
-    /** Cancels a running walking sound fade. */
-    cancelWalkingFade() {
-        if (!this.walkingFadeInterval) {
-            return;}
-        clearInterval(this.walkingFadeInterval);
-        this.walkingFadeInterval = null;
-        this.walking_sound.volume = this.walkingVolume;
-    }
-
     /** Updates Pepe's visible animation state. */
     updateCharacterAnimation() {
         if (typeof isGamePaused === "function" && isGamePaused()) {
+            CharakterAudio.stopSnoringSound(this);
             return;}
+        if (this.tryPlayNonGroundAnimation()) {
+            return;
+        }
+        this.prepareLandingState();
+        this.playGroundStateAnimation();
+    }
+
+    /*** Plays the non-ground state animation when needed.
+     * @returns {boolean} True when a non-ground state handled the frame.*/
+    tryPlayNonGroundAnimation() {
         if (this.isDead()) {
             this.playDeathStateAnimation();
-            return;}
+            return true;
+        }
         if (this.isHurt()) {
             this.playHurtStateAnimation();
-            return;}
+            return true;
+        }
         if (this.isAboveGround()) {
+            this.wasAboveGround = true;
             this.playAirStateAnimation();
-            return;}
-        this.playGroundStateAnimation();
+            return true;
+        }
+        return false;
+    }
+
+    /** Prepares the landing state after Pepe touches the ground again. */
+    prepareLandingState() {
+        if (!this.wasAboveGround) {
+            return;
+        }
+        this.wasAboveGround = false;
+        this.landingActive = true;
+        this.landingStartedAt = Date.now();
     }
 
     /** Plays the death animation state. */
@@ -205,7 +170,8 @@ class Charakter extends MovableObject {
             this.activeAnimation = null;
             this.deathAnimationStarted = true;
         }
-        this.stopWalkingSound();
+        CharakterAudio.stopWalkingSound(this);
+        CharakterAudio.stopSnoringSound(this);
         this.playCharacterAnimation(this.IMAGES_DEAD);
     }
 
@@ -213,6 +179,7 @@ class Charakter extends MovableObject {
     playHurtStateAnimation() {
         this.resetIdleTimer();
         this.deathAnimationStarted = false;
+        CharakterAudio.stopSnoringSound(this);
         this.playCharacterAnimation(this.IMAGES_HURT);
     }
 
@@ -220,6 +187,7 @@ class Charakter extends MovableObject {
     playAirStateAnimation() {
         this.resetIdleTimer();
         this.deathAnimationStarted = false;
+        CharakterAudio.stopSnoringSound(this);
         this.playCharacterAnimation(this.IMAGES_JUMPING);
     }
 
@@ -233,15 +201,54 @@ class Charakter extends MovableObject {
         this.stompBounceActive = false;
         this.jumpLoopStartFrameIndex = this.normalJumpStartFrameIndex;
         this.deathAnimationStarted = false;
-        if (!this.world || !this.world.keyboard) {
-            return;}
+        if (this.shouldShowLandingFrame() || !this.world || !this.world.keyboard) {
+            return;
+        }
+        if (this.tryPlayGroundActionAnimation()) {
+            return;
+        }
+        this.playIdleStateAnimation();
+    }
+
+    /*** Keeps Pepe on the landing frame until the landing animation expires.
+     * @returns {boolean} True when the landing frame is still active.*/
+    shouldShowLandingFrame() {
+        if (!this.landingActive) {
+            return false;
+        }
+        if (Date.now() - this.landingStartedAt < this.landingDuration) {
+            this.img = this.imageCache[this.IMAGES_JUMPING[this.jumpShadowStartFrameIndex]];
+            return true;
+        }
+        this.landingActive = false;
+        return false;
+    }
+
+    /*** Plays moving or throwing animations while on the ground.
+     * @returns {boolean} True when an action animation was played.*/
+    tryPlayGroundActionAnimation() {
         if (this.isMoving()) {
+            CharakterAudio.stopSnoringSound(this);
             this.playMovingAnimation();
-            return;}
+            return true;
+        }
         if (this.isThrowingBottle()) {
+            CharakterAudio.stopSnoringSound(this);
             this.playThrowingAnimation();
-            return;}
-        this.playCharacterAnimation(this.getIdleAnimation());
+            return true;
+        }
+        return false;
+    }
+
+    /** Plays Pepe's idle or sleeping animation on the ground. */
+    playIdleStateAnimation() {
+        const idleAnimation = this.getIdleAnimation();
+        if (idleAnimation === this.IMAGES_LONG_IDLE) {
+            CharakterAudio.startSnoringSound(this);
+        } else {
+            CharakterAudio.stopSnoringSound(this);
+        }
+        this.playCharacterAnimation(idleAnimation);
     }
 
     /** Plays the walking animation. */
@@ -278,13 +285,14 @@ class Charakter extends MovableObject {
      * @returns {boolean} True when the movement frame is skipped.*/
     shouldSkipMovementFrame() {
         if (typeof isGamePaused === "function" && isGamePaused()) {
-            this.stopWalkingSound();
+            CharakterAudio.stopWalkingSound(this);
+            CharakterAudio.stopSnoringSound(this);
             return true;}
         if (!this.world || !this.world.keyboard || this.handleDeadMovementState()) {
-            return true;
-        }
+            return true;}
         if (this.isMovementLockedAfterHit()) {
-            this.stopWalkingSound();
+            CharakterAudio.stopWalkingSound(this);
+            CharakterAudio.stopSnoringSound(this);
             this.updateCameraPosition();
             return true;
         }
@@ -305,7 +313,8 @@ class Charakter extends MovableObject {
         if (!this.isDead()) {
             return false;}
         this.resetIdleTimer();
-        this.stopWalkingSound();
+        CharakterAudio.stopWalkingSound(this);
+        CharakterAudio.stopSnoringSound(this);
         return true;
     }
 
@@ -314,8 +323,8 @@ class Charakter extends MovableObject {
         if (this.isMoving() || this.isThrowingBottle()) {
             this.resetIdleTimer();}
         if (this.isMoving()) {
-            this.startWalkingSound();} 
-        else {this.stopWalkingSound();}
+            CharakterAudio.startWalkingSound(this);} 
+        else {CharakterAudio.stopWalkingSound(this);}
     }
 
     /*** Updates horizontal movement and facing direction.
@@ -335,13 +344,6 @@ class Charakter extends MovableObject {
     /** Applies jump input when Pepe is grounded. */
     updateJumpInput() {
         CharakterJumpLogic.updateJumpInput(this);
-    }
-
-    /** Plays Pepe's jump sound. */
-    playJumpSound() {
-        this.jump_sound.currentTime = 0;
-        this.jump_sound.muted = typeof isGameMuted === "function" && isGameMuted();
-        this.jump_sound.play().catch(() => { });
     }
 
     /** Updates the world camera position. */
@@ -364,7 +366,9 @@ class Charakter extends MovableObject {
         this.loadImages(this.IMAGES_HURT);
         this.walking_sound.preload = "auto";
         this.jump_sound.preload = "auto";
+        this.snoring_sound.preload = "auto";
         this.walking_sound.loop = true;
+        this.snoring_sound.loop = true;
         this.applyGravity();
         this.animate();
     }

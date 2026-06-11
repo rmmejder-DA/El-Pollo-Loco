@@ -126,7 +126,6 @@ class World extends DrawableObject {
     /** Converts a full coin bar into extra health for Pepe. */
     convertCoinsToHealth() {
         if (this.character.energy >= 100) {
-            this.coinCount = 0;
             return;
         }
         this.character.energy = Math.min(100, this.character.energy + 20);
@@ -174,22 +173,12 @@ class World extends DrawableObject {
 
     /** Throws a bottle when input and inventory allow it. */
     checkTrowObjects() {
-        if (!this.keyboard.D || this.bottleCount <= 0) {
+        if (!this.keyboard.consumeThrowRequest() || this.bottleCount <= 0) {
             return;
         }
         this.throwBottleFromCharacter();
-        this.unlockBossAttackAfterFirstThrow();
         this.bottleCount--;
-        this.keyboard.D = false;
         this.updateCollectibleStatusBars();
-    }
-
-    /** Unlocks boss attacks after Pepe's first bottle throw in boss phase. */
-    unlockBossAttackAfterFirstThrow() {
-        if (!this.bossPhaseStarted || this.bossAttackUnlocked) {
-            return;
-        }
-        this.bossAttackUnlocked = true;
     }
 
     /**
@@ -197,7 +186,7 @@ class World extends DrawableObject {
      * @returns {boolean} True when boss attacks are unlocked.
      */
     canEndbossAttack() {
-        return this.bossAttackUnlocked;
+        return this.bossPhaseStarted && Date.now() >= this.bossFightTextUntil;
     }
 
     /** Creates one throwable bottle from Pepe's hand. */
@@ -229,7 +218,9 @@ class World extends DrawableObject {
         }
         sound.muted = typeof isGameMuted === "function" && isGameMuted();
         sound.currentTime = 0;
-        sound.play().catch(() => { });
+        sound.play().catch((error) => {
+            console.warn("World sound playback was blocked or failed.", error);
+        });
     }
 
     /**
@@ -238,7 +229,9 @@ class World extends DrawableObject {
      */
     setMuted(isMuted) {
         this.getWorldSounds().forEach((sound) => sound.muted = isMuted);
-        this.character?.setMuted?.(isMuted);
+        if (this.character) {
+            CharakterAudio.setMuted(this.character, isMuted);
+        }
     }
 
     /** Schedules the win screen after the boss dies. */

@@ -1,6 +1,6 @@
 class WorldCollisionHandler {
     coinPickupDistance = 95;
-    endbossBottleDamage = 27.5;
+    endbossBottleDamage = 13;
 
     /*** Creates a collision handler for a world.
      * @param {World} world - The world to handle collisions for.*/

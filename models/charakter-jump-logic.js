@@ -157,7 +157,7 @@ const CharakterJumpLogic = {
         character.stompBounceActive = false;
         character.jumpLoopStartFrameIndex = character.normalJumpStartFrameIndex;
         character.resetIdleTimer();
-        character.playJumpSound();
+        CharakterAudio.playJumpSound(character);
         character.jump();
     }
 };

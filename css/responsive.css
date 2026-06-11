@@ -1,4 +1,7 @@
 @media only screen and (max-width: 1440px) {
+    .game-info-text{
+        display:none;
+    }
     .help-mobile-text {
         position: absolute;
     }
@@ -20,9 +23,38 @@
         top: 28px;
         right: 120px;
         z-index: 1000;
+        margin: 0;
+        width: max-content;
+    }
+
+    .game-info-text-mobile {
+        display: block;
+        position: absolute;
+        top: 6px;
+        right: 30px;
+        z-index: 1000;
+        margin: 0;
+        width: max-content;
     }
 
     .help-me-container {
+        display: none;
+    }
+
+    .game-info-trigger {
+        display: flex;
+        position: absolute;
+        top: 28px;
+        right: 20px;
+        margin-right: 0;
+        z-index: 1000;
+        gap: 4px;
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+
+
+    .game-info-trigger-icon {
         display: none;
     }
 
@@ -48,8 +80,29 @@
         object-fit: contain;
     }
 
+    .game-info-trigger {
+        top: 28px;
+        right: 120px;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+@media only screen and (hover: none) and (pointer: coarse) {
     .fullscreen-button {
         display: none !important;
+    }
+
+    canvas {
+        width: min(100vw, calc(100dvh * 1.5));
+        max-width: 100vw;
+        max-height: 100dvh;
+    }
+}
+
+@media only screen and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+    canvas {
+        width: 100vw;
     }
 }
 
@@ -71,9 +124,93 @@
         top: 16px;
         right: 80px;
     }
+
+    .impressum-screen {
+        padding: 12px;
+    }
+
+    .impressum-card {
+        width: min(100vw - 24px, 560px);
+        max-height: calc(100dvh - 24px);
+        padding: 20px 18px;
+        border-width: 3px;
+        border-radius: 12px;
+    }
+
+    .impressum-card h2 {
+        margin-bottom: 14px;
+        font-size: clamp(28px, 7vw, 34px);
+    }
+
+    .impressum-card p {
+        font-size: 16px;
+    }
+
+    .impressum-note {
+        font-size: clamp(15px, 3.6vw, 19px);
+    }
+
+    .close-button {
+        padding: 8px 24px;
+        font-size: 22px;
+    }
+    
+    .game-info-card {
+        width: min(100vw - 24px, 560px);
+        max-height: calc(100dvh - 24px);
+        overflow-y: auto;
+        padding: 20px 16px;
+        border-width: 3px;
+    }
+
+    .game-info-icon {
+        width: clamp(74px, 24vw, 108px);
+        margin-bottom: 8px;
+    }
+
+    .game-info-card h2 {
+        font-size: clamp(28px, 7vw, 34px);
+    }
+
+    .game-info-card p {
+        font-size: clamp(17px, 3.9vw, 21px);
+        margin-bottom: 16px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .impressum-screen {
+        align-items: stretch;
+    }
+
+    .impressum-card {
+        width: 100%;
+        max-height: calc(100dvh - 16px);
+        margin: auto 0;
+        padding: 18px 14px;
+    }
+
+    .impressum-card h2 {
+        letter-spacing: 1px;
+    }
+
+    .impressum-card p {
+        margin: 8px 0;
+    }
+
+    .game-info-card {
+        width: 100%;
+        max-height: calc(100dvh - 16px);
+        padding: 18px 14px;
+    }
+
+    .game-info-icon {
+        width: clamp(70px, 30vw, 96px);
+    }
 }
 
 @media only screen and (max-width: 900px) {
+
     #fullscreen:fullscreen,
     #fullscreen:-webkit-full-screen,
     #fullscreen:-ms-fullscreen {

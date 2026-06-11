@@ -13,6 +13,8 @@ function init() {
 function configureGlobalAudio() {
     pepeDeadSound.preload = "auto";
     pepeDeadSound.volume = 0.45;
+    youWinSound.preload = "auto";
+    youWinSound.volume = 0.42;
     gameSound.preload = "auto";
     gameSound.volume = 0.015;
     gameSound.loop = true;
@@ -29,7 +31,7 @@ function startGameStateWatcher() {
 /*** Checks whether the state watcher should pause.
  * @returns {boolean} True when watcher work should be skipped.*/
 function shouldSkipStateWatcher() {
-    return !world || !world.character || gamePaused;
+    return !world || !world.character;
 }
 
 /** Resolves the boss-fight outcome so only one end state is shown. */
@@ -66,6 +68,7 @@ function didCharacterWinBossFight() {
 function handleGlobalKeyDown(event) {
     if (gamePaused) {return;}
     if (keyboard.handleKeyDown(event)) {
+    event.preventDefault();
         syncWalkingAudioFromInput();}
 }
 
@@ -73,6 +76,7 @@ function handleGlobalKeyDown(event) {
  * @param {KeyboardEvent} event - The keyboard event.*/
 function handleGlobalKeyUp(event) {
     if (keyboard.handleKeyUp(event)) {
+        event.preventDefault();
         syncWalkingAudioFromInput();
     }
 }

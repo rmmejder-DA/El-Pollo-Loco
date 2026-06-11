@@ -15,6 +15,7 @@
     <script defer src="models/drawable-object.class.js"></script>
     <script defer src="models/movable-object.class.js"></script>
     <script defer src="models/charakter.config.js"></script>
+    <script defer src="models/charakter-audio.js"></script>
     <script defer src="models/charakter-jump-logic.js"></script>
     <script defer src="models/charakter.class.js"></script>
     <script defer src="models/chicken.class.js"></script>
@@ -51,9 +52,16 @@
     </div>
 
     <div id="fullscreen">
-        <div id="helpMeContainer" class="help-me-container" role="button" tabindex="0">
-            <img src="icon/help_me_transparent.png" alt="Help Me" class="keyboard-info">
-            <p class="help-me-text">Keyboard Info</p>
+        <div class="game-help-container">
+            <div id="helpMeContainer" class="help-me-container" role="button" tabindex="0">
+                <img src="icon/help_me_transparent.png" alt="Help Me" class="keyboard-info">
+                <p class="help-me-text">Keyboard Info</p>
+            </div>
+
+            <div class="game-info-trigger" onclick="toggleGameInfo()">
+                <img src="icon/Information.png" alt="Information" class="game-info-trigger-icon">
+                <p class="game-info-text">Game Info</p>
+            </div>
         </div>
 
         <div class="mobile-touch-key-info hidden" id="mobileTouchKeyInfo">
@@ -73,13 +81,12 @@
 
             <div class="mobile-controls-right">
 
-                <span class="mobile-control-label" aria-label="Jump"><img
-                        class="jump-img" src="icon/jump-white.png"
+                <span class="mobile-control-label" aria-label="Jump"><img class="jump-img" src="icon/jump-white.png"
                         alt="Jump">JUMP</span>
-                        
-                <span class="mobile-control-label"><img
-                        class="throw-img"
-                        src="img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png" alt="Throw Bottle">THROW BOTTLE</span>
+
+                <span class="mobile-control-label"><img class="throw-img"
+                        src="img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png" alt="Throw Bottle">THROW
+                    BOTTLE</span>
             </div>
         </div>
 
@@ -103,6 +110,14 @@
             <button class="close-button" onclick="toggleKeyboardInfo()">Close</button>
         </div>
 
+        <div id="gameInfo" class="keyboard-info-screen hidden">
+            <div class="game-info-card">
+                <p>Wenn man die Coins sammelt, bekommt man Energie und wenn man den Boss trifft, spuckt er die Flaschen
+                    raus.</p>
+                <button class="close-button" onclick="toggleGameInfo()">Close</button>
+            </div>
+        </div>
+
         <div id="impressumScreen" class="impressum-screen hidden">
             <div class="impressum-card">
                 <h2>Impressum</h2>
@@ -110,7 +125,8 @@
                 <p>Anschrift: Almendorfer Str 15, 36100 Petersberg</p>
                 <p>E-Mail: rmmejder@gmail.com</p>
                 <p>Verantwortlich fuer den Inhalt: Max Mejder</p>
-                <p class="impressum-note">Dieses Spiel ist ausschliesslich zur privaten Nutzung bestimmt. Eine gewerbliche Nutzung oder Weitergabe ist nicht gestattet.</p>
+                <p class="impressum-note">Dieses Spiel ist ausschliesslich zur privaten Nutzung bestimmt. Eine
+                    gewerbliche Nutzung oder Weitergabe ist nicht gestattet.</p>
                 <button class="close-button" onclick="toggleImpressum()">Close</button>
             </div>
         </div>
@@ -121,6 +137,7 @@
             <button class="impressum-button" onclick="toggleImpressum()">IMPRESSUM</button>
             <div class="help-me-mobile" role="button" tabindex="0" onclick="toggleMobileHelp()">
                 <p class="help-mobile-text">HELP</p>
+                <p role="button" onclick="toggleGameInfo()" class="game-info-text-mobile">Game Info</p>
             </div>
         </div>
 
@@ -146,9 +163,9 @@
 
         <canvas id="polloCanvas" class="hidden" width="720" height="480"></canvas>
 
-        </div>
-
     </div>
+
+
     <button id="fullscreenButton" class="fullscreen-button hidden" onclick="openFullscreen();"></button>
 </body>
 

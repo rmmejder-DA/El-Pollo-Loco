@@ -4,6 +4,8 @@ function hideMenuScreens() {
     hideElementById("gameOverScreen");
     hideElementById("winScreen");
     hideElementById("impressumScreen");
+    hideElementById("keyboardInfo");
+    hideElementById("gameInfo");
 }
 
 /*** Hides one element by id.
@@ -90,7 +92,13 @@ function showGameOverScreen() {
 /*** Plays Pepe's death sound.*/
 function playPepeDeadSound() {
     pepeDeadSound.currentTime = 0;
-    pepeDeadSound.play().catch(() => { });
+    playAudioWithCatch(pepeDeadSound, "pepeDeadSound");
+}
+
+/*** Plays the win fanfare sound.*/
+function playYouWinSound() {
+    youWinSound.currentTime = 0;
+    playAudioWithCatch(youWinSound, "youWinSound");
 }
 
 /*** Shows the win screen once.*/
@@ -98,6 +106,7 @@ function showWinScreen() {
     if (winShown || gameOverShown) {return;}
     winShown = true;
     stopGameSound();
+    playYouWinSound();
     setTimeout(() => {
         setGamePaused(true);
         showElementById("winScreen");
@@ -118,8 +127,13 @@ function restartGame() {
 function resetRestartInputAndAudio() {
     keyboard.reset();
     setGamePaused(false);
-    world?.character?.stopWalkingSound();
+    if (world?.character) {
+        CharakterAudio.stopWalkingSound(world.character);
+        CharakterAudio.stopSnoringSound(world.character);
+    }
     stopGameSound();
+    youWinSound.pause();
+    youWinSound.currentTime = 0;
 }
 
 /*** Reuses or creates the world for a restart.*/
