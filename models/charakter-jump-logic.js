@@ -49,6 +49,8 @@ const CharakterJumpLogic = {
         if (images !== character.IMAGES_JUMPING) {
             return;
         }
+        this.keepStompFramesInRange(character);
+        this.capJumpShadowFrames(character);
         this.wrapJumpFrameIndex(character, images.length);
     },
 
@@ -136,11 +138,11 @@ const CharakterJumpLogic = {
      */
     showStompJumpFrame(character) {
         character.stompBounceActive = true;
-        character.jumpLoopStartFrameIndex = 0;
+        character.jumpLoopStartFrameIndex = character.stompJumpFrameIndex;
         character.activeAnimation = character.IMAGES_JUMPING;
-        character.currentImageIndex = 0;
+        character.currentImageIndex = character.stompJumpFrameIndex;
         character.lastAnimationFrameAt = Date.now();
-        const framePath = character.IMAGES_JUMPING[0];
+        const framePath = character.IMAGES_JUMPING[character.stompJumpFrameIndex];
         character.img = character.imageCache[framePath];
     },
 
