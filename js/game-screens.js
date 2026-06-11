@@ -54,9 +54,8 @@ async function startGame() {
     requestFullscreenOnMobileStart();
     startGameSound();
     prepareGameScreen();
-    setGamePaused(true);
-    buildFreshWorld();
     await showLoadingScreen();
+    buildFreshWorld();
     finishGameStart();
 }
 
@@ -73,7 +72,6 @@ function finishGameStart() {
     applyMuteState();
     gameOverShown = false;
     winShown = false;
-    setGamePaused(false);
     activateGameScreen();
 }
 
