@@ -32,6 +32,7 @@ function prepareGameScreen() {
     canvas?.classList.add("hidden");
     setFullscreenButtonVisible(false);
     hideElementById("helpMeContainer");
+    hideElementById("gameInfoTrigger");
     hideElementById("keyboardInfo");
     setMobileControlsVisible(false);
     setGamePaused(false);

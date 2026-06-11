@@ -81,6 +81,12 @@ class Charakter extends MovableObject {
         return this.world && this.world.keyboard && this.world.keyboard.D;
     }
 
+    /*** Checks whether Pepe was hit recently.
+     * @returns {boolean} True when the hurt animation should still be shown.*/
+    isHurt() {
+        return Date.now() - this.lastHit < this.hurtMovementLockMs;
+    }
+
     /*** Plays a character animation sequence.
      * @param {string[]} images - The animation frame paths.*/
     playCharacterAnimation(images) {
