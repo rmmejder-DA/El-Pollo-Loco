@@ -157,6 +157,15 @@ class World extends DrawableObject {
         this.collisionHandler.checkCollisions();
         this.collisionHandler.checkCollectibleCollisions();
         this.collisionHandler.checkBottleCollisions();
+        this.tryConvertFullCoinBarToHealth();
+    }
+
+    /** Converts a full coin bar into health as soon as Pepe is hurt. */
+    tryConvertFullCoinBarToHealth() {
+        if (this.coinCount >= this.maxCoins && this.character.energy < 100) {
+            this.convertCoinsToHealth();
+            this.updateCollectibleStatusBars();
+        }
     }
 
     /** Runs one bottle throw update tick. */
@@ -206,6 +215,11 @@ class World extends DrawableObject {
     /** Checks whether another bottle can be collected. */
     canCollectBottle() {
         return this.bottleCount < this.maxBottles;
+    }
+
+    /** Checks whether another coin can be collected. */
+    canCollectCoin() {
+        return this.coinCount < this.maxCoins || this.character.energy < 100;
     }
 
     /**

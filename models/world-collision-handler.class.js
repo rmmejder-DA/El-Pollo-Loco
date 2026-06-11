@@ -133,6 +133,7 @@ class WorldCollisionHandler {
     /** Checks Pepe against the endboss. */
     checkEndbossCollision() {
         const endboss = this.world.getEndboss();
+        const character = this.world.character;
         const bossCanDamage = endboss && typeof endboss.canDamageCharacter === "function"
             ? endboss.canDamageCharacter()
             : true;
@@ -140,13 +141,15 @@ class WorldCollisionHandler {
             ? endboss.isRetreating()
             : false;
 
-        if (endboss && !endboss.isDead() && this.world.character.isColliding(endboss)) {
-            if (!bossIsRetreating) {
-                this.blockCharacterAt(endboss);
-            }
-            if (bossCanDamage) {
-                this.damageCharacter();
-            }
+        if (!endboss || endboss.isDead() || character.isDead() || !character.isColliding(endboss)) {
+            return;
+        }
+
+        if (bossCanDamage) {
+            this.damageCharacter();
+        }
+        if (!bossIsRetreating && !character.isDead()) {
+            this.blockCharacterAt(endboss);
         }
     }
 
@@ -161,15 +164,14 @@ class WorldCollisionHandler {
         for (let i = this.world.level.coins.length - 1; i >= 0; i--) {
             const coin = this.world.level.coins[i];
             if (!coin || !this.isCoinCollectingCollision(coin)) {
-                continue;
-            }
-
+                continue;}
+            if (!this.world.canCollectCoin()) {
+                continue;}
             this.world.level.coins.splice(i, 1);
             this.world.coinCount += 1;
             this.world.playCollectibleSound(this.world.coinCollectSound);
             if (this.world.coinCount >= this.world.maxCoins) {
-                this.world.convertCoinsToHealth();
-            }
+                this.world.convertCoinsToHealth();}
             this.world.updateCollectibleStatusBars();
         }
     }

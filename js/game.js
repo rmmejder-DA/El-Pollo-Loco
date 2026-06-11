@@ -48,10 +48,10 @@ function resolveGameEndState() {
     }
 }
 
-/*** Checks whether Pepe is defeated (dead or empty health bar).
+/*** Checks whether Pepe is defeated.
  * @returns {boolean} True when Pepe should be game over.*/
 function isCharacterDefeated() {
-    return world.character.isDead() || world.character.energy < 20;
+    return world.character.isDead();
 }
 
 /**
