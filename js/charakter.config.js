@@ -57,6 +57,8 @@ const CHARAKTER_ASSETS = Object.freeze({
     ])
 });
 
+/*** Default configuration values for the Charakter class.
+ * These values can be overridden in the Charakter constructor or instance.*/
 const CHARAKTER_DEFAULTS = Object.freeze({
     height: 260,
     width: 150,

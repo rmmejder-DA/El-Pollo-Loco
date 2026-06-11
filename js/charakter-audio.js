@@ -52,9 +52,8 @@ const CharakterAudio = {
         character.snoringAudioActive = true;
         character.snoring_sound.currentTime = 0;
         character.snoring_sound.volume = 0.03;
-        character.snoring_sound.play().catch((error) => {
+        character.snoring_sound.play().catch(() => {
             character.snoringAudioActive = false;
-            console.warn("Snoring sound playback was blocked or failed.", error);
         });
     },
 
@@ -108,8 +107,8 @@ const CharakterAudio = {
     playJumpSound(character) {
         character.jump_sound.currentTime = 0;
         character.jump_sound.muted = typeof isGameMuted === "function" && isGameMuted();
-        character.jump_sound.play().catch((error) => {
-            console.warn("Jump sound playback was blocked or failed.", error);
+        character.jump_sound.play().catch(() => {
+            character.jump_sound.muted = true;
         });
     }
 };

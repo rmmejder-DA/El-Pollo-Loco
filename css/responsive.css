@@ -86,6 +86,12 @@
         padding: 4px 8px;
         font-size: 12px;
     }
+    .game-over-screen img, .win-screen img {
+        max-width: min(335px, 92vw);
+        aspect-ratio: 7 / 4;
+        height: auto;
+        max-height: min(88vh, 760px);
+    }
 }
 
 @media only screen and (hover: none) and (pointer: coarse) {

@@ -14,7 +14,7 @@ function preloadImage(src) {
  * @param {number} ms - The number of milliseconds to wait.
  * @returns {Promise<void>} A promise that resolves after the delay.*/
 function wait(ms) {
-    return new Promise((resolve) => setTimeout(resolve, 5000));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /*** Starts the loading Pepe walk animation.*/

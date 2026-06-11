@@ -49,8 +49,6 @@ const CharakterJumpLogic = {
         if (images !== character.IMAGES_JUMPING) {
             return;
         }
-        this.capJumpShadowFrames(character);
-        this.keepStompFramesInRange(character);
         this.wrapJumpFrameIndex(character, images.length);
     },
 
@@ -138,11 +136,11 @@ const CharakterJumpLogic = {
      */
     showStompJumpFrame(character) {
         character.stompBounceActive = true;
-        character.jumpLoopStartFrameIndex = character.stompJumpFrameIndex;
+        character.jumpLoopStartFrameIndex = 0;
         character.activeAnimation = character.IMAGES_JUMPING;
-        character.currentImageIndex = character.stompJumpFrameIndex;
+        character.currentImageIndex = 0;
         character.lastAnimationFrameAt = Date.now();
-        const framePath = character.IMAGES_JUMPING[character.stompJumpFrameIndex];
+        const framePath = character.IMAGES_JUMPING[0];
         character.img = character.imageCache[framePath];
     },
 
@@ -155,7 +153,7 @@ const CharakterJumpLogic = {
             return;
         }
         character.stompBounceActive = false;
-        character.jumpLoopStartFrameIndex = character.normalJumpStartFrameIndex;
+        character.jumpLoopStartFrameIndex = 0;
         character.resetIdleTimer();
         CharakterAudio.playJumpSound(character);
         character.jump();

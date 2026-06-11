@@ -43,6 +43,7 @@ function loadStoredBoolean(key, fallback) {
         const value = localStorage.getItem(key);
         return value === null ? fallback : value === "true";
     } catch (error) {
+        localStorage.clear();
         return fallback;
     }
 }
@@ -54,7 +55,7 @@ function saveStoredBoolean(key, value) {
     try {
         localStorage.setItem(key, String(value));
     } catch (error) {
-        console.warn("Could not persist game setting in localStorage.", error);
+        localStorage.clear();
     }
 }
 

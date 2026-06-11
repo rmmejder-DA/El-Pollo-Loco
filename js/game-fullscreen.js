@@ -21,9 +21,7 @@ function openFullscreen(fullscreenTarget = canvas) {
  * @returns {Promise<void>} A promise-like fullscreen result.*/
 function requestFullscreenForTarget(target) {
     if (target.requestFullscreen) {
-        return target.requestFullscreen().catch((error) => {
-            console.warn("Fullscreen request was blocked or failed.", error);
-        });
+        return target.requestFullscreen();
     }
     requestLegacyFullscreen(target);
     return Promise.resolve();
@@ -76,6 +74,7 @@ function toggleGameInfo() {
 /*** Toggles the mobile help overlay.*/
 function toggleMobileHelp() {
     document.getElementById("mobileTouchKeyInfo")?.classList.toggle("hidden");
+    event.stopPropagation();
 }
 
 /*** Builds the canvas HUD button definitions.

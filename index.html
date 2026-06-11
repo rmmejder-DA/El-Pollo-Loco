@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="css/responsive.css">
     <script defer src="models/drawable-object.class.js"></script>
     <script defer src="models/movable-object.class.js"></script>
-    <script defer src="models/charakter.config.js"></script>
-    <script defer src="models/charakter-audio.js"></script>
+    <script defer src="js/charakter.config.js"></script>
+    <script defer src="js/charakter-audio.js"></script>
     <script defer src="models/charakter-jump-logic.js"></script>
     <script defer src="models/charakter.class.js"></script>
     <script defer src="models/chicken.class.js"></script>
@@ -163,10 +163,9 @@
 
         <canvas id="polloCanvas" class="hidden" width="720" height="480"></canvas>
 
+        <button id="fullscreenButton" class="fullscreen-button hidden" type="button" aria-label="Fullscreen einschalten" title="Fullscreen oppening" onclick="openFullscreen()"></button>
+
     </div>
-
-
-    <button id="fullscreenButton" class="fullscreen-button hidden" onclick="openFullscreen();"></button>
 </body>
 
 </html>

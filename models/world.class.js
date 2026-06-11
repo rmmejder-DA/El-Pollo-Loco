@@ -218,8 +218,8 @@ class World extends DrawableObject {
         }
         sound.muted = typeof isGameMuted === "function" && isGameMuted();
         sound.currentTime = 0;
-        sound.play().catch((error) => {
-            console.warn("World sound playback was blocked or failed.", error);
+        sound.play().catch(() => {
+            sound.muted = true;
         });
     }
 

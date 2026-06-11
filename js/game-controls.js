@@ -8,9 +8,7 @@ function setFullscreenButtonVisible(isVisible) {
 /*** Registers keyboard information interactions.*/
 function initKeyboardInfo() {
     const helpContainer = document.getElementById("helpMeContainer");
-    if (!helpContainer) {
-        return;
-    }
+    if (!helpContainer) {return;}
     helpContainer.addEventListener("click", toggleKeyboardInfo);
     helpContainer.addEventListener("keydown", handleKeyboardInfoKeydown);
 }
@@ -19,9 +17,7 @@ function initKeyboardInfo() {
  * @param {KeyboardEvent} event - The keyboard event.*/
 function handleKeyboardInfoKeydown(event) {
     if (event.key !== "Enter" && event.key !== " ") {
-        return;
-    }
-
+        return;}
     event.preventDefault();
     toggleKeyboardInfo();
 }
@@ -30,9 +26,7 @@ function handleKeyboardInfoKeydown(event) {
  * @param {boolean} isVisible - Whether mobile controls should be visible.*/
 function setMobileControlsVisible(isVisible) {
     const controls = document.getElementById("mobileControls");
-    if (!controls) {
-        return;
-    }
+    if (!controls) {return;}
     controls.classList.toggle("hidden", !isVisible || shouldUseCanvasMobileControls());
     resetMobileInputWhenHidden(isVisible);
 }
@@ -40,9 +34,7 @@ function setMobileControlsVisible(isVisible) {
 /*** Resets mobile input when controls are hidden.
  * @param {boolean} isVisible - Whether controls are visible.*/
 function resetMobileInputWhenHidden(isVisible) {
-    if (isVisible) {
-        return;
-    }
+    if (isVisible) {return;}
     resetCanvasMobileControls();
     keyboard.reset();
     syncWalkingAudioFromInput();
@@ -53,9 +45,7 @@ function resetMobileInputWhenHidden(isVisible) {
  * @param {string} key - The keyboard action name.*/
 function bindTouchButton(buttonId, key) {
     const button = document.getElementById(buttonId);
-    if (!button) {
-        return;
-    }
+    if (!button) {return;}
     bindTouchStart(button, key);
     bindTouchEnd(button, key);
 }

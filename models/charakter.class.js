@@ -144,17 +144,14 @@ class Charakter extends MovableObject {
     tryPlayNonGroundAnimation() {
         if (this.isDead()) {
             this.playDeathStateAnimation();
-            return true;
-        }
+            return true;}
         if (this.isHurt()) {
             this.playHurtStateAnimation();
-            return true;
-        }
+            return true;}
         if (this.isAboveGround()) {
             this.wasAboveGround = true;
             this.playAirStateAnimation();
-            return true;
-        }
+            return true;}
         return false;
     }
 

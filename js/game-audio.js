@@ -38,13 +38,13 @@ function pauseGameAudio() {
 /*** Starts audio playback and handles blocked or failed play requests.
  * @param {HTMLAudioElement} audio - The audio element to play.
  * @param {string} audioName - A label used for diagnostics.*/
-function playAudioWithCatch(audio, audioName) {
+function playAudioWithCatch(audio) {
     const playPromise = audio?.play?.();
     if (!playPromise || typeof playPromise.catch !== "function") {
         return;
     }
-    playPromise.catch((error) => {
-        console.warn(`Audio playback for ${audioName} was blocked or failed.`, error);
+    playPromise.catch(() => {
+        audio.muted = true;
     });
 }
 
