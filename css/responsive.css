@@ -95,11 +95,13 @@
         height: auto;
         max-height: min(88vh, 760px);
     }
-        .impressum-card p{
-        margin: 8px 0!important;
+
+    .impressum-card p {
+        margin: 8px 0 !important;
         font-size: clamp(17px, 3.9vw, 21px);
     }
-    .impressum-card{
+
+    .impressum-card {
         padding: 20px 16px;
     }
 }
@@ -154,7 +156,7 @@
     }
 
     .impressum-card h2 {
-        margin-bottom: 12px!important;
+        margin-bottom: 12px !important;
         font-size: clamp(28px, 7vw, 34px);
     }
 
@@ -224,5 +226,14 @@
     #fullscreen:-ms-fullscreen {
         background-image: none;
         background-color: #000000;
+    }
+
+    .impressum-card p {
+        margin: 8px 0 !important;
+        font-size: clamp(17px, 3.9vw, 19px);
+    }
+
+    .impressum-card {
+        padding: 20px 16px;
     }
 }

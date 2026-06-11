@@ -253,4 +253,6 @@ function initCanvasMobileControls() {
     canvas.addEventListener("pointerup", handleCanvasPointerEnd);
     canvas.addEventListener("pointercancel", handleCanvasPointerEnd);
     canvas.addEventListener("pointerleave", handleCanvasPointerEnd);
+    canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+    document.getElementById("fullscreen")?.addEventListener("contextmenu", (event) => event.preventDefault());
 }

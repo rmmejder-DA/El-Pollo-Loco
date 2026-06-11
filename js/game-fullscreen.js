@@ -67,12 +67,14 @@ function toggleKeyboardInfo() {
 
 /*** Toggles the game information screen.*/
 function toggleGameInfo() {
+    hideElementById("mobileTouchKeyInfo");
     document.getElementById("gameInfo")?.classList.toggle("hidden");
     event.stopPropagation();
 }
 
 /*** Toggles the mobile help overlay.*/
 function toggleMobileHelp() {
+    hideElementById("gameInfo");
     document.getElementById("mobileTouchKeyInfo")?.classList.toggle("hidden");
     event.stopPropagation();
 }
